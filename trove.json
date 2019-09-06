@@ -1,0 +1,19 @@
+{
+	"Name": "helloworld/core",
+	"Version": "",
+	"Description": "",
+	"Keywords": [],
+	"Homepage": "",
+	"Type": "module",
+	"License": "MIT",
+	"Authors": [
+		{
+			"Name": "Yanlong-li",
+			"Email": "ahlyl94@gmail.com",
+			"Description": ""
+		}
+	],
+	"Support": {},
+	"Require": {},
+	"Custom": {}
+}
