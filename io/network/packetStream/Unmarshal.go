@@ -1,6 +1,9 @@
 package packetStream
 
-import "reflect"
+import (
+	"log"
+	"reflect"
+)
 
 // 从字节流中反射出对应的结构体并注入到指定方法中
 func (ps *PacketStream) Unmarshal(f interface{}) {
@@ -18,8 +21,28 @@ func (ps *PacketStream) Unmarshal(f interface{}) {
 			switch field.Kind() {
 			case reflect.String:
 				field.SetString(ps.ReadString())
-			case reflect.Int:
-				field.SetInt(1)
+			case reflect.Uint8:
+				field.SetUint(uint64(ps.ReadUInt8()))
+			case reflect.Uint16:
+				field.SetUint(uint64(ps.ReadUInt16()))
+			case reflect.Uint32:
+				field.SetUint(uint64(ps.ReadUInt32()))
+			case reflect.Uint64:
+				field.SetUint(ps.ReadUInt64())
+			case reflect.Int8:
+				field.SetInt(int64(ps.ReadInt8()))
+			case reflect.Int16:
+				field.SetInt(int64(ps.ReadInt16()))
+			case reflect.Int32:
+				field.SetInt(int64(ps.ReadInt32()))
+			case reflect.Int64:
+				field.SetInt(ps.ReadInt64())
+			case reflect.Float32:
+				field.SetFloat(float64(ps.ReadFloat32()))
+			case reflect.Float64:
+				field.SetFloat(ps.ReadFloat64())
+			default:
+				log.Fatal("不支持的类型")
 			}
 		}
 		in[i] = elem

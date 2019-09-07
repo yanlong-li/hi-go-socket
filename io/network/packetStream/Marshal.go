@@ -1,10 +1,13 @@
 package packetStream
 
-import "reflect"
+import (
+	"log"
+	"reflect"
+)
 
 //将包结构体反射写入字节流中
-func (ps *PacketStream) Marshal(f interface{}) {
-	t := reflect.TypeOf(f)
+func (ps *PacketStream) Marshal(s interface{}) {
+	t := reflect.TypeOf(s)
 	//构造一个存放函数实参 Value 值的数纽
 	in := make([]reflect.Value, t.NumIn())
 	// 取出所有需要注入的依赖参数
@@ -18,11 +21,30 @@ func (ps *PacketStream) Marshal(f interface{}) {
 			switch field.Kind() {
 			case reflect.String:
 				field.SetString(ps.ReadString())
-			case reflect.Int:
-				field.SetInt(1)
+			case reflect.Uint8:
+				field.SetUint(uint64(ps.ReadUInt8()))
+			case reflect.Uint16:
+				field.SetUint(uint64(ps.ReadUInt16()))
+			case reflect.Uint32:
+				field.SetUint(uint64(ps.ReadUInt32()))
+			case reflect.Uint64:
+				field.SetUint(ps.ReadUInt64())
+			case reflect.Int8:
+				field.SetInt(int64(ps.ReadInt8()))
+			case reflect.Int16:
+				field.SetInt(int64(ps.ReadInt16()))
+			case reflect.Int32:
+				field.SetInt(int64(ps.ReadInt32()))
+			case reflect.Int64:
+				field.SetInt(ps.ReadInt64())
+			case reflect.Float32:
+				field.SetFloat(float64(ps.ReadFloat32()))
+			case reflect.Float64:
+				field.SetFloat(ps.ReadFloat64())
+			default:
+				log.Fatal("不支持的类型")
 			}
 		}
 		in[i] = elem
 	}
-	reflect.ValueOf(f).Call(in)
 }

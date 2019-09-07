@@ -2,6 +2,7 @@ package client
 
 import (
 	"HelloWorld/io/network/base"
+	"HelloWorld/io/network/packetStream"
 	"fmt"
 	"log"
 	"net"
@@ -15,11 +16,17 @@ func Start() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	ps := packetStream.PacketStream{Stream: conn}
 	for {
 		var buf = make([]byte, 8192)
-		mType, err := conn.Read(buf)
-		fmt.Println(mType, err, string(buf))
-		_, _ = conn.Write([]byte(`A`))
-		fmt.Println(0xF)
+		_, err := conn.Read(buf)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		ps.Len = uint16(packetStream.BytesToUint64(buf[0:2]))
+		ps.Data = buf[2 : ps.Len+2]
+		ps.Handle()
 	}
 }

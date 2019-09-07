@@ -36,6 +36,16 @@ func Start() {
 
 func handleMessage(conn net.Conn) {
 
-	fmt.Println(conn.Write([]byte(`A`)))
+	qs := make([]byte, 0)
+	// 字符长度
+	qs = append(qs, byte(0x03))
+	qs = append(qs, byte(0x00))
+	// 操作码
+	qs = append(qs, byte(0x01))
+	qs = append(qs, byte(0x00))
+	// 内容
+	qs = append(qs, byte(0xFF))
+	conn.Write(qs)
+	//fmt.Println(conn.Write([]byte(`A`)))
 
 }
