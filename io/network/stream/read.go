@@ -1,4 +1,4 @@
-package packetStream
+package stream
 
 // 读取bool值
 func (ps *PacketStream) ReadBool() bool {

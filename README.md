@@ -14,7 +14,7 @@
     https://github.com/Yanlong-LI/HelloWorld-GO.git
 
 #### 客户端源码地址：
-    https://github.com/Yanlong-LI/HelloWorldClient-GO.git 
+    https://github.com/Yanlong-LI/HelloWorldClient
 
 #### 服务端源码地址：
-    https://github.com/Yanlong-LI/HelloWorldServer-GO.git
+    https://github.com/Yanlong-LI/HelloWorldServer

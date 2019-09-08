@@ -1,7 +1,6 @@
-package service
+package network
 
 import (
-	"HelloWorld/io/network/base"
 	"fmt"
 	"log"
 	"net"
@@ -10,9 +9,9 @@ import (
 
 //开始服务
 // 需要参数 监听地址:监听端口
-func Start() {
+func Server() {
 
-	service, err := net.Listen(base.Tcp, ":8080")
+	service, err := net.Listen(Tcp, ":8080")
 	fmt.Println(service, err)
 	if err != nil {
 		log.Fatal(err)
@@ -25,7 +24,7 @@ func Start() {
 			log.Println("accept error:", err)
 			break
 		} else {
-			handleMessage(conn)
+			go handleConnected(conn)
 		}
 		i++
 		log.Printf("%d: accept a new connection\n", i)
@@ -34,7 +33,8 @@ func Start() {
 
 }
 
-func handleMessage(conn net.Conn) {
+// 处理每个连接
+func handleConnected(conn net.Conn) {
 
 	qs := make([]byte, 0)
 	// 字符长度
