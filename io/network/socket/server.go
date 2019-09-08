@@ -1,6 +1,7 @@
-package network
+package socket
 
 import (
+	"HelloWorld/io/network/socket/connect"
 	"fmt"
 	"log"
 	"net"
@@ -12,10 +13,10 @@ import (
 func Server() {
 
 	service, err := net.Listen(Tcp, ":8080")
-	fmt.Println(service, err)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("服务开启成功")
 	defer service.Close()
 	var i int
 	for {
@@ -24,28 +25,14 @@ func Server() {
 			log.Println("accept error:", err)
 			break
 		} else {
-			go handleConnected(conn)
+			// 写入本地连接列表
+			connector := connect.Connector{Conn: conn}
+			connect.List[conn] = connector
+			go connector.Connected()
 		}
 		i++
 		log.Printf("%d: accept a new connection\n", i)
 
 	}
-
-}
-
-// 处理每个连接
-func handleConnected(conn net.Conn) {
-
-	qs := make([]byte, 0)
-	// 字符长度
-	qs = append(qs, byte(0x03))
-	qs = append(qs, byte(0x00))
-	// 操作码
-	qs = append(qs, byte(0x01))
-	qs = append(qs, byte(0x00))
-	// 内容
-	qs = append(qs, byte(0xFF))
-	conn.Write(qs)
-	//fmt.Println(conn.Write([]byte(`A`)))
 
 }
