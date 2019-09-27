@@ -1,8 +1,9 @@
 package connect
 
 import (
-	"HelloWorld/io/network/handle"
-	"HelloWorld/io/network/socket/packet"
+	packet2 "HelloWorld/io/network/packet"
+	"HelloWorld/io/network/route"
+	"HelloWorld/io/network/socket/stream"
 	"fmt"
 	"net"
 	"reflect"
@@ -27,11 +28,11 @@ func (conn *Connector) Connected() {
 			break
 		}
 		// 每次动作不一致都注册一个单独的动作来处理
-		ps := packet.PacketStream{}
-		ps.Len = uint16(packet.BytesToUint64(buf[0:2]))
+		ps := stream.PacketStream{}
+		ps.Len = uint16(stream.BytesToUint64(buf[0:2]))
 		ps.Data = buf[2 : ps.Len+2]
 		ps.OpCode = ps.ReadUInt16()
-		f := handle.Handle(ps.OpCode)
+		f := route.Handle(ps.OpCode)
 		if f != nil {
 			in := ps.Unmarshal(f)
 			in[len(in)-1] = reflect.ValueOf(conn)
@@ -46,17 +47,17 @@ func (conn *Connector) Connected() {
 // 建立连接时
 func beforeAction(conn *Connector) {
 
-	ps := packet.PacketStream{}
+	ps := stream.PacketStream{}
 	ps.Len = uint16(2)
 	ps.Data = []byte{0, 0}
 	ps.OpCode = ps.ReadUInt16()
-	f := handle.Handle(ps.OpCode)
+	f := route.Handle(ps.OpCode)
 	if f != nil {
 		in := ps.Unmarshal(f)
 		in[len(in)-1] = reflect.ValueOf(conn)
 		reflect.ValueOf(f).Call(in)
 	} else {
-		//fmt.Println("没有设置连接包:", ps.OpCode)
+		fmt.Println("没有设置连接包:", ps.OpCode)
 	}
 }
 
@@ -66,12 +67,13 @@ func afterAction(conn net.Conn) {
 }
 
 func (conn *Connector) Send(model interface{}) {
-	pakcetStream := packet.PacketStream{}
-	pakcetStream.Marshal(model)
+	packetStream := stream.PacketStream{}
+	packetStream.Marshal(model)
 	data := make([]byte, 0)
-	data = append(data, WriteUint16(uint16(len(pakcetStream.Data)+2))...)
-	data = append(data, WriteUint16(uint16(1))...)
-	data = append(data, pakcetStream.Data...)
+	data = append(data, WriteUint16(uint16(len(packetStream.Data)+2))...)
+	op := packet2.OpCode(model)
+	data = append(data, WriteUint16(op)...)
+	data = append(data, packetStream.Data...)
 
 	_, err := conn.Conn.Write(data)
 	if err != nil {

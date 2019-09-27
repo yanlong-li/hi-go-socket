@@ -1,4 +1,4 @@
-package packet
+package stream
 
 type PacketStream struct {
 	Data   []byte //数据储存体

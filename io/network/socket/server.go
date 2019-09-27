@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 )
 
 //开始服务
@@ -20,7 +19,7 @@ func Server() {
 	defer service.Close()
 	var i int
 	for {
-		time.Sleep(time.Second * 10)
+		//time.Sleep(time.Second * 10)
 		if conn, err := service.Accept(); err != nil {
 			log.Println("accept error:", err)
 			break

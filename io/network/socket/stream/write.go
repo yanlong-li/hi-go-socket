@@ -1,4 +1,4 @@
-package packet
+package stream
 
 func (ps *PacketStream) WriteBool(data bool) {
 	if data {
