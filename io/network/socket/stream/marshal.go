@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 )
@@ -27,8 +28,20 @@ func (ps *PacketStream) Marshal(packet interface{}) {
 		case reflect.Int64:
 		case reflect.Float32:
 		case reflect.Float64:
+		case reflect.Slice:
+			ps.WriteUint16(uint16(field.Len()))
+			for i := 0; i < field.Len(); i++ {
+				elm := field.Index(i)
+
+				switch elm.Kind() {
+				case reflect.String:
+					ps.WriteString(elm.String())
+				default:
+					fmt.Println("切片不支持的写入类型", elm.Kind())
+				}
+			}
 		default:
-			log.Fatal("不支持的类型")
+			log.Fatal("不支持写入的类型", field.Kind())
 		}
 	}
 }

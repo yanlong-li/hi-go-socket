@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 )
@@ -41,12 +42,22 @@ func (ps *PacketStream) Unmarshal(f interface{}) []reflect.Value {
 				field.SetFloat(float64(ps.ReadFloat32()))
 			case reflect.Float64:
 				field.SetFloat(ps.ReadFloat64())
+			case reflect.Slice:
+
+				fmt.Println(field.Type())
+				num := ps.ReadUInt16()
+				field.SetCap(int(num))
+				field.SetLen(int(num))
+				fmt.Println(field.Len())
+				for i := 0; uint16(i) < num; i++ {
+					e := field.Index(i)
+					e.SetString(ps.ReadString())
+				}
 			default:
-				log.Fatal("不支持的类型")
+				log.Fatal("不支持读取的类型")
 			}
 		}
 		in[i] = elem
 	}
 	return in
-	//reflect.ValueOf(f).Call(in)
 }

@@ -1,11 +1,14 @@
 package route
 
-import "HelloWorld/io/network/packet"
+import (
+	"HelloWorld/io/network/packet"
+	"reflect"
+)
 
 var routes = make(map[interface{}]interface{})
 
 func Register(packet, fun interface{}) {
-	routes[packet] = fun
+	routes[reflect.TypeOf(packet)] = fun
 }
 
 func Handle(op uint16) interface{} {
@@ -14,7 +17,7 @@ func Handle(op uint16) interface{} {
 
 	if p != nil {
 
-		if v, ok := routes[p]; ok {
+		if v, ok := routes[reflect.TypeOf(p)]; ok {
 			return v
 		}
 	}
