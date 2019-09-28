@@ -1,7 +1,6 @@
 package stream
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 )
@@ -19,45 +18,50 @@ func (ps *PacketStream) Unmarshal(f interface{}) []reflect.Value {
 		elem := reflect.New(params).Elem()
 		for k := 0; k < elem.NumField(); k++ {
 			field := elem.Field(k)
-			switch field.Kind() {
-			case reflect.String:
-				field.SetString(ps.ReadString())
-			case reflect.Uint8:
-				field.SetUint(uint64(ps.ReadUInt8()))
-			case reflect.Uint16:
-				field.SetUint(uint64(ps.ReadUInt16()))
-			case reflect.Uint32:
-				field.SetUint(uint64(ps.ReadUInt32()))
-			case reflect.Uint64:
-				field.SetUint(ps.ReadUInt64())
-			case reflect.Int8:
-				field.SetInt(int64(ps.ReadInt8()))
-			case reflect.Int16:
-				field.SetInt(int64(ps.ReadInt16()))
-			case reflect.Int32:
-				field.SetInt(int64(ps.ReadInt32()))
-			case reflect.Int64:
-				field.SetInt(ps.ReadInt64())
-			case reflect.Float32:
-				field.SetFloat(float64(ps.ReadFloat32()))
-			case reflect.Float64:
-				field.SetFloat(ps.ReadFloat64())
-			case reflect.Slice:
-
-				fmt.Println(field.Type())
-				num := ps.ReadUInt16()
-				field.SetCap(int(num))
-				field.SetLen(int(num))
-				fmt.Println(field.Len())
-				for i := 0; uint16(i) < num; i++ {
-					e := field.Index(i)
-					e.SetString(ps.ReadString())
-				}
-			default:
-				log.Fatal("不支持读取的类型")
-			}
+			value := ps.UnmarshalConverter(field)
+			field.Set(value)
 		}
 		in[i] = elem
 	}
 	return in
+}
+
+func (ps *PacketStream) UnmarshalConverter(field reflect.Value) reflect.Value {
+
+	switch field.Kind() {
+	case reflect.String:
+		field.SetString(ps.ReadString())
+	case reflect.Uint8:
+		field.SetUint(uint64(ps.ReadUInt8()))
+	case reflect.Uint16:
+		field.SetUint(uint64(ps.ReadUInt16()))
+	case reflect.Uint32:
+		field.SetUint(uint64(ps.ReadUInt32()))
+	case reflect.Uint64:
+		field.SetUint(ps.ReadUInt64())
+	case reflect.Int8:
+		field.SetInt(int64(ps.ReadInt8()))
+	case reflect.Int16:
+		field.SetInt(int64(ps.ReadInt16()))
+	case reflect.Int32:
+		field.SetInt(int64(ps.ReadInt32()))
+	case reflect.Int64:
+		field.SetInt(ps.ReadInt64())
+	case reflect.Float32:
+		field.SetFloat(float64(ps.ReadFloat32()))
+	case reflect.Float64:
+		field.SetFloat(ps.ReadFloat64())
+	case reflect.Slice:
+		// 读取数量
+		num := ps.ReadUInt16()
+		newV := reflect.MakeSlice(field.Type(), 1, int(num))
+		for i := 0; i < int(num); i++ {
+			newV = reflect.Append(newV, ps.UnmarshalConverter(newV.Index(0)))
+		}
+		field.Set(newV.Slice(1, newV.Len()))
+	default:
+		log.Fatal("未知类型", field.Kind())
+	}
+	return field
+
 }

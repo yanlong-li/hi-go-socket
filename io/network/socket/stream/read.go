@@ -1,5 +1,7 @@
 package stream
 
+import "encoding/binary"
+
 // 读取bool值
 func (ps *PacketStream) ReadBool() bool {
 	if ps.ReadUInt8() > 0 {
@@ -21,7 +23,7 @@ func (ps *PacketStream) ReadUInt8() (data uint8) {
 // 读取 Uint16
 func (ps *PacketStream) ReadUInt16() (data uint16) {
 	if ps.checkLen(2) {
-		data = uint16(BytesToUint64(ps.Data[ps.Index : ps.Index+2]))
+		data = uint16(binary.LittleEndian.Uint16(ps.Data[ps.Index : ps.Index+2]))
 		ps.Index += 2
 		return
 	}
@@ -31,7 +33,7 @@ func (ps *PacketStream) ReadUInt16() (data uint16) {
 // 读取 Uint32
 func (ps *PacketStream) ReadUInt32() (data uint32) {
 	if ps.checkLen(4) {
-		data = uint32(BytesToUint64(ps.Data[ps.Index : ps.Index+2]))
+		data = binary.LittleEndian.Uint32(ps.Data[ps.Index : ps.Index+4])
 		ps.Index += 4
 		return
 	}
@@ -41,7 +43,7 @@ func (ps *PacketStream) ReadUInt32() (data uint32) {
 // 读取 Uint64
 func (ps *PacketStream) ReadUInt64() (data uint64) {
 	if ps.checkLen(8) {
-		data = uint64(BytesToUint64(ps.Data[ps.Index : ps.Index+2]))
+		data = uint64(binary.LittleEndian.Uint64(ps.Data[ps.Index : ps.Index+8]))
 		ps.Index += 8
 		return
 	}
@@ -61,7 +63,7 @@ func (ps *PacketStream) ReadInt8() (data int8) {
 // 读取 int16
 func (ps *PacketStream) ReadInt16() (data int16) {
 	if ps.checkLen(2) {
-		data = int16(BytesToUint64(ps.Data[ps.Index : ps.Index+2]))
+		data = int16(binary.LittleEndian.Uint16(ps.Data[ps.Index : ps.Index+2]))
 		ps.Index += 2
 		return
 	}
@@ -71,7 +73,7 @@ func (ps *PacketStream) ReadInt16() (data int16) {
 // 读取 int32
 func (ps *PacketStream) ReadInt32() (data int32) {
 	if ps.checkLen(4) {
-		data = int32(BytesToUint64(ps.Data[ps.Index : ps.Index+2]))
+		data = int32(binary.LittleEndian.Uint32(ps.Data[ps.Index : ps.Index+4]))
 		ps.Index += 4
 		return
 	}
@@ -81,7 +83,7 @@ func (ps *PacketStream) ReadInt32() (data int32) {
 // 读取 int64
 func (ps *PacketStream) ReadInt64() (data int64) {
 	if ps.checkLen(8) {
-		data = int64(BytesToUint64(ps.Data[ps.Index : ps.Index+2]))
+		data = int64(binary.LittleEndian.Uint64(ps.Data[ps.Index : ps.Index+8]))
 		ps.Index += 8
 		return
 	}
@@ -93,7 +95,7 @@ func (ps *PacketStream) ReadInt64() (data int64) {
 // 读取 Float32
 func (ps *PacketStream) ReadFloat32() (data float32) {
 	if ps.checkLen(4) {
-		data = HexToFloat32(ps.Data[ps.Index : ps.Index+4])
+		data = ByteToFloat32(ps.Data[ps.Index : ps.Index+4])
 		ps.Index += 4
 		return
 	}
@@ -103,7 +105,7 @@ func (ps *PacketStream) ReadFloat32() (data float32) {
 // 读取 Float64
 func (ps *PacketStream) ReadFloat64() (data float64) {
 	if ps.checkLen(8) {
-		data = HexToFloat64(ps.Data[ps.Index : ps.Index+8])
+		data = ByteToFloat64(ps.Data[ps.Index : ps.Index+8])
 		ps.Index += 8
 		return
 	}
@@ -116,7 +118,7 @@ func (ps *PacketStream) ReadString() (data string) {
 	if ps.checkLen(2) {
 		length := ps.Data[ps.Index : ps.Index+2]
 		ps.Index += 2
-		data = ps.ReadStringL(uint16(BytesToUint64(length)))
+		data = ps.ReadStringL(binary.LittleEndian.Uint16(length))
 		return
 	}
 	return

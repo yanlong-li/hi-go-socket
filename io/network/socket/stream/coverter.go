@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"encoding/binary"
 	"math"
 )
 
@@ -47,4 +48,32 @@ func HexToFloat64(data []byte) float64 {
 	x := (zf & ((1 << (uint32((length-1)*8) - 1)) - 1)) + 1<<(uint32((length-1)*8)-1)
 	exp := (zf >> (uint32((length-1)*8) - 1) & 255) - 127
 	return float64(x) * math.Pow(2, float64(exp-(((length-1)*8)-1)))
+}
+
+func Float32ToByte(float float32) []byte {
+	bits := math.Float32bits(float)
+	bytes := make([]byte, 4)
+	binary.LittleEndian.PutUint32(bytes, bits)
+
+	return bytes
+}
+
+func ByteToFloat32(bytes []byte) float32 {
+	bits := binary.LittleEndian.Uint32(bytes)
+
+	return math.Float32frombits(bits)
+}
+
+func Float64ToByte(float float64) []byte {
+	bits := math.Float64bits(float)
+	bytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(bytes, bits)
+
+	return bytes
+}
+
+func ByteToFloat64(bytes []byte) float64 {
+	bits := binary.LittleEndian.Uint64(bytes)
+
+	return math.Float64frombits(bits)
 }

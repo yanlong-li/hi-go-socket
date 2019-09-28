@@ -4,6 +4,7 @@ import (
 	packet2 "HelloWorld/io/network/packet"
 	"HelloWorld/io/network/route"
 	"HelloWorld/io/network/socket/stream"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"reflect"
@@ -17,7 +18,7 @@ func (conn *Connector) Connected() {
 	//处理首次连接动作
 	beforeAction(conn)
 	// 处理连接断开后的动作
-	defer afterAction(conn.Conn)
+	defer afterAction(conn.ID)
 
 	for {
 		var buf = make([]byte, 8192)
@@ -29,7 +30,7 @@ func (conn *Connector) Connected() {
 		}
 		// 每次动作不一致都注册一个单独的动作来处理
 		ps := stream.PacketStream{}
-		ps.Len = uint16(stream.BytesToUint64(buf[0:2]))
+		ps.Len = binary.LittleEndian.Uint16(buf[0:2])
 		ps.Data = buf[2 : ps.Len+2]
 		ps.OpCode = ps.ReadUInt16()
 		f := route.Handle(ps.OpCode)
@@ -62,8 +63,19 @@ func beforeAction(conn *Connector) {
 }
 
 // 准备断开连接
-func afterAction(conn net.Conn) {
-	fmt.Println("没有处理动作")
+func afterAction(ID uint32) {
+	ps := stream.PacketStream{}
+	ps.Len = uint16(2)
+	ps.Data = []byte{0, 0}
+	ps.OpCode = 0x06
+	f := route.Handle(ps.OpCode)
+	if f != nil {
+		in := ps.Unmarshal(f)
+		in[len(in)-1] = reflect.ValueOf(ID)
+		reflect.ValueOf(f).Call(in)
+	} else {
+		fmt.Println("没有设置连接包:", ps.OpCode)
+	}
 }
 
 func (conn *Connector) Send(model interface{}) {

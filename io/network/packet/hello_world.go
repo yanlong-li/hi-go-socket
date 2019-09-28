@@ -23,6 +23,6 @@ type Token struct {
 }
 
 type LoginFail struct {
-	Code    uint16
+	Code    int32
 	Message string
 }

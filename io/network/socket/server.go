@@ -17,7 +17,7 @@ func Server() {
 	}
 	fmt.Println("服务开启成功")
 	defer service.Close()
-	var i int
+	var i uint32
 	for {
 		//time.Sleep(time.Second * 10)
 		if conn, err := service.Accept(); err != nil {
@@ -25,7 +25,7 @@ func Server() {
 			break
 		} else {
 			// 写入本地连接列表
-			connector := connect.Connector{Conn: conn}
+			connector := connect.Connector{Conn: conn, ID: i}
 			connect.List[conn] = connector
 			go connector.Connected()
 		}
