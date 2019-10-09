@@ -15,5 +15,11 @@
 	],
 	"Support": {},
 	"Require": {},
-	"Custom": {}
+	"Custom": {
+		"gorilla/websocket": {
+			"Version": "*",
+			"Source": "commit@https://github.com/gorilla/websocket",
+			"Type": "git"
+		}
+	}
 }

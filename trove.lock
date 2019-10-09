@@ -1,0 +1,19 @@
+{
+	"Packages": {
+		"gorilla/websocket": {
+			"Name": "gorilla/websocket",
+			"Version": "*",
+			"Description": "",
+			"Keywords": null,
+			"Homepage": "",
+			"Type": "module",
+			"License": "",
+			"Authors": null,
+			"Support": null,
+			"Require": null,
+			"Custom": null,
+			"Use": 1
+		}
+	},
+	"GenerationTime": "2019-09-28 13:29:24"
+}
