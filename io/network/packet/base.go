@@ -11,7 +11,7 @@ var Packets = make(map[uint16]interface{})
 var RPackets = make(map[interface{}]uint16)
 
 // 包服务注册应由引用源程序处理并注册到当前包的packets之下
-func register(op uint16, packet interface{}) {
+func Register(op uint16, packet interface{}) {
 	Packets[op] = packet
 	RPackets[reflect.TypeOf(packet)] = op
 }

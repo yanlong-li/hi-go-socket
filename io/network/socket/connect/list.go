@@ -67,7 +67,7 @@ func afterAction(ID uint32) {
 	ps := stream.PacketStream{}
 	ps.Len = uint16(2)
 	ps.Data = []byte{0, 0}
-	ps.OpCode = 0x06
+	ps.OpCode = 1
 	f := route.Handle(ps.OpCode)
 	if f != nil {
 		in := ps.Unmarshal(f)

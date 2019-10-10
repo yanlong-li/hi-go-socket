@@ -1,2 +1,4 @@
 /.idea
 /vendor
+# 后续packet 非系统级不再补充 业务级自行处理
+/io/network/packet/
