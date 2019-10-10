@@ -59,6 +59,11 @@ func (ps *PacketStream) UnmarshalConverter(field reflect.Value) reflect.Value {
 			newV = reflect.Append(newV, ps.UnmarshalConverter(newV.Index(0)))
 		}
 		field.Set(newV.Slice(1, newV.Len()))
+	case reflect.Struct:
+		for k := 0; k < field.NumField(); k++ {
+			field2 := field.Field(k)
+			ps.UnmarshalConverter(field2)
+		}
 	default:
 		log.Fatal("未知类型", field.Kind())
 	}

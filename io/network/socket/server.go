@@ -11,7 +11,7 @@ import (
 // 需要参数 监听地址:监听端口
 func Server() {
 
-	service, err := net.Listen(Tcp, ":8080")
+	service, err := net.Listen(Tcp, ":3001")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,7 +26,7 @@ func Server() {
 		} else {
 			// 写入本地连接列表
 			connector := connect.Connector{Conn: conn, ID: i}
-			connect.List[conn] = connector
+			connect.List[i] = connector
 			go connector.Connected()
 		}
 		i++

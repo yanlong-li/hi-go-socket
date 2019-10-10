@@ -18,6 +18,8 @@ func (ps *PacketStream) MarshalConverter(field reflect.Value) {
 	switch field.Kind() {
 	case reflect.String:
 		ps.WriteString(field.String())
+	case reflect.Int:
+		ps.WriteInt64(field.Int())
 	case reflect.Uint8:
 		ps.WriteUint8(uint8(field.Uint()))
 	case reflect.Uint16:
@@ -43,6 +45,11 @@ func (ps *PacketStream) MarshalConverter(field reflect.Value) {
 		for i := 0; i < field.Len(); i++ {
 			elm := field.Index(i)
 			ps.MarshalConverter(elm)
+		}
+	case reflect.Struct:
+		for k := 0; k < field.NumField(); k++ {
+			field := field.Field(k)
+			ps.MarshalConverter(field)
 		}
 	default:
 		log.Fatal("不支持写入的类型", field.Kind())

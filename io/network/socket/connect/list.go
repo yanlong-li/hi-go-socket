@@ -6,11 +6,10 @@ import (
 	"HelloWorld/io/network/socket/stream"
 	"encoding/binary"
 	"fmt"
-	"net"
 	"reflect"
 )
 
-var List = make(map[net.Conn]Connector, 1)
+var List = make(map[uint32]Connector, 1)
 
 // 处理每个连接
 func (conn *Connector) Connected() {
@@ -37,7 +36,7 @@ func (conn *Connector) Connected() {
 		if f != nil {
 			in := ps.Unmarshal(f)
 			in[len(in)-1] = reflect.ValueOf(conn)
-			reflect.ValueOf(f).Call(in)
+			go reflect.ValueOf(f).Call(in)
 		} else {
 			fmt.Println("未注册的包:", ps.OpCode)
 		}
@@ -64,6 +63,7 @@ func beforeAction(conn *Connector) {
 
 // 准备断开连接
 func afterAction(ID uint32) {
+	delete(List, ID)
 	ps := stream.PacketStream{}
 	ps.Len = uint16(2)
 	ps.Data = []byte{0, 0}
@@ -92,6 +92,13 @@ func (conn *Connector) Send(model interface{}) {
 		fmt.Println("发送数据失败", err)
 	}
 }
+
+func Broadcast(model interface{}) {
+	for _, v := range List {
+		v.Send(model)
+	}
+}
+
 func WriteUint16(n uint16) []byte {
 	return []byte{byte(n), byte(n >> 8)}
 }
