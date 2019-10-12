@@ -26,7 +26,8 @@ func Server() {
 		} else {
 			// 写入本地连接列表
 			connector := connect.Connector{Conn: conn, ID: i}
-			connect.List[i] = connector
+			connect.Save(connector)
+			//connect.List[i] = connector
 			go connector.Connected()
 		}
 		i++

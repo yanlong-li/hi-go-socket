@@ -11,6 +11,35 @@ import (
 
 var List = make(map[uint32]Connector, 1)
 
+var SaveChan = make(chan Connector)
+var DelChan = make(chan uint32)
+var BroadcastChan = make(chan interface{})
+
+func init() {
+
+	go func() {
+		for {
+			select {
+			case conn := <-SaveChan:
+				List[conn.ID] = conn
+			case ID := <-DelChan:
+				delete(List, ID)
+			case model := <-BroadcastChan:
+				for _, v := range List {
+					v.Send(model)
+				}
+			}
+		}
+	}()
+}
+
+func Save(conn Connector) {
+	SaveChan <- conn
+}
+func Del(ID uint32) {
+	DelChan <- ID
+}
+
 // 处理每个连接
 func (conn *Connector) Connected() {
 
@@ -63,7 +92,10 @@ func beforeAction(conn *Connector) {
 
 // 准备断开连接
 func afterAction(ID uint32) {
-	delete(List, ID)
+
+	//todo 移除conn
+	Del(ID)
+
 	ps := stream.PacketStream{}
 	ps.Len = uint16(2)
 	ps.Data = []byte{0, 0}
@@ -94,9 +126,9 @@ func (conn *Connector) Send(model interface{}) {
 }
 
 func Broadcast(model interface{}) {
-	for _, v := range List {
-		v.Send(model)
-	}
+
+	BroadcastChan <- model
+
 }
 
 func WriteUint16(n uint16) []byte {

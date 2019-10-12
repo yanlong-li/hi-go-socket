@@ -1,5 +1,19 @@
 {
 	"Packages": {
+		"garyburd/redigo": {
+			"Name": "garyburd/redigo",
+			"Version": "*",
+			"Description": "",
+			"Keywords": null,
+			"Homepage": "",
+			"Type": "module",
+			"License": "",
+			"Authors": null,
+			"Support": null,
+			"Require": null,
+			"Custom": null,
+			"Use": 1
+		},
 		"gorilla/websocket": {
 			"Name": "gorilla/websocket",
 			"Version": "*",
@@ -15,5 +29,5 @@
 			"Use": 1
 		}
 	},
-	"GenerationTime": "2019-09-28 13:29:24"
+	"GenerationTime": "2019-10-12 15:56:43"
 }

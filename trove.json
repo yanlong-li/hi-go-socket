@@ -16,6 +16,11 @@
 	"Support": {},
 	"Require": {},
 	"Custom": {
+		"garyburd/redigo": {
+			"Version": "*",
+			"Source": "commit@https://github.com/garyburd/redigo",
+			"Type": "git"
+		},
 		"gorilla/websocket": {
 			"Version": "*",
 			"Source": "commit@https://github.com/gorilla/websocket",

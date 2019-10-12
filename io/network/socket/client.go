@@ -18,6 +18,6 @@ func Client() {
 	fmt.Println("已连接到服务器")
 	// 写入本地连接列表
 	connector := connect.Connector{Conn: conn}
-	connect.List[0] = connector
+	connect.List[99] = connector
 	connector.Connected()
 }
