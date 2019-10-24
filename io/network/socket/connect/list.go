@@ -6,6 +6,7 @@ import (
 	"HelloWorld/io/network/socket/stream"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"reflect"
 )
 
@@ -18,12 +19,13 @@ func (conn *Connector) Connected() {
 	defer conn.afterAction()
 	for {
 		var buf = make([]byte, 8192)
-		_, err := conn.Conn.Read(buf)
+		bufLen, err := conn.Conn.Read(buf)
 		if err != nil {
 			//log.Fatal(err)
 			fmt.Println("连接断开")
 			break
 		}
+		log.Print(buf[0:bufLen])
 		// 每次动作不一致都注册一个单独的动作来处理
 		ps := stream.PacketStream{}
 		ps.Len = binary.LittleEndian.Uint16(buf[0:2])
@@ -60,6 +62,8 @@ func (conn *Connector) beforeAction() {
 
 // 准备断开连接
 func (conn *Connector) afterAction() {
+
+	_ = conn.Conn.Close()
 
 	connect.Del(conn.ID)
 

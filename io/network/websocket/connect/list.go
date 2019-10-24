@@ -68,6 +68,9 @@ func (conn *Connector) beforeAction() {
 
 // 准备断开连接
 func (conn *Connector) afterAction() {
+
+	_ = conn.Conn.Close()
+
 	connect.Del(conn.ID)
 
 	f := route.Handle(1)
