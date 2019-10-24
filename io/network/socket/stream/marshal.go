@@ -1,12 +1,14 @@
 package stream
 
 import (
+	packet2 "HelloWorld/io/network/packet"
 	"log"
 	"reflect"
 )
 
-//todo 将包结构体反射写入字节流中
+//将包结构体反射写入字节流中
 func (ps *PacketStream) Marshal(packet interface{}) {
+	ps.OpCode = packet2.OpCode(packet)
 
 	elem := reflect.ValueOf(packet)
 	for k := 0; k < elem.NumField(); k++ {

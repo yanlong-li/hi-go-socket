@@ -1,47 +1,23 @@
 package connect
 
 import (
+	"HelloWorld/io/network/connect"
 	"HelloWorld/io/network/packet"
 	"HelloWorld/io/network/route"
 	"HelloWorld/io/network/websocket/stream"
 	"encoding/hex"
 	"fmt"
-	"gorilla/websocket"
 	"log"
-	"net/http"
 	"reflect"
 )
-
-var List = make(map[*websocket.Conn]Connector, 1)
-
-var upGrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-var i uint32 = 0
-
-func Connect(w http.ResponseWriter, r *http.Request) {
-	conn, err := upGrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Print("upgrade:", err)
-		return
-	}
-	i++
-	// 写入本地连接列表
-	connector := Connector{Conn: conn, ID: i}
-	List[conn] = connector
-	connector.Connected()
-	defer conn.Close()
-}
 
 // 处理每个连接
 func (conn *Connector) Connected() {
 
 	//处理首次连接动作
-	beforeAction(conn)
+	conn.beforeAction()
 	// 处理连接断开后的动作
-	defer afterAction(conn.ID)
+	defer conn.afterAction()
 	for {
 		// 读取消息
 		_, message, err := conn.Conn.ReadMessage()
@@ -78,51 +54,47 @@ func (conn *Connector) Connected() {
 }
 
 // 建立连接时
-func beforeAction(conn *Connector) {
+func (conn *Connector) beforeAction() {
 
-	//ps := stream.PacketStream{}
-	//ps.Len = uint16(2)
-	//ps.Data = []byte{0, 0}
-	//ps.OpCode = ps.ReadUInt16()
-	//f := route.Handle(ps.OpCode)
-	//if f != nil {
-	//	in := ps.Unmarshal(f)
-	//	in[len(in)-1] = reflect.ValueOf(conn)
-	//	reflect.ValueOf(f).Call(in)
-	//} else {
-	//	fmt.Println("没有设置连接包:", ps.OpCode)
-	//}
+	f := route.Handle(0)
+	if f != nil {
+		in := make([]reflect.Value, 1)
+		in[0] = reflect.ValueOf(conn)
+		reflect.ValueOf(f).Call(in)
+	} else {
+		fmt.Println("没有设置连接包:", 0)
+	}
 }
 
 // 准备断开连接
-func afterAction(ID uint32) {
-	//ps := stream.PacketStream{}
-	//ps.Len = uint16(2)
-	//ps.Data = []byte{0, 0}
-	//ps.OpCode = 0x06
-	//f := route.Handle(ps.OpCode)
-	//if f != nil {
-	//	in := ps.Unmarshal(f)
-	//	in[len(in)-1] = reflect.ValueOf(ID)
-	//	reflect.ValueOf(f).Call(in)
-	//} else {
-	//	fmt.Println("没有设置连接包:", ps.OpCode)
-	//}
+func (conn *Connector) afterAction() {
+	connect.Del(conn.ID)
+
+	f := route.Handle(1)
+	if f != nil {
+		//构造一个存放函数实参 Value 值的数纽
+		in := make([]reflect.Value, 1)
+		in[0] = reflect.ValueOf(conn.ID)
+		reflect.ValueOf(f).Call(in)
+	} else {
+		fmt.Println("没有设置连接包:", 1)
+	}
 }
 
 func (conn *Connector) Send(model interface{}) {
 	pd, err := stream.Marshal(model)
 	data := make([]byte, 0)
-	data = append(data, WriteUint16(uint16(len(pd)+2))...)
+	data = append(data, connect.WriteUint16(uint16(len(pd)+2))...)
 	op := packet.OpCode(model)
-	data = append(data, WriteUint16(op)...)
+	data = append(data, connect.WriteUint16(op)...)
 	data = append(data, pd...)
 
-	err = conn.Conn.WriteMessage(1, data)
+	err = conn.Conn.WriteMessage(2, data)
 	if err != nil {
 		fmt.Println("发送数据失败", err)
 	}
 }
-func WriteUint16(n uint16) []byte {
-	return []byte{byte(n), byte(n >> 8)}
+
+func (conn *Connector) GetId() uint32 {
+	return conn.ID
 }

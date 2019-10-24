@@ -142,6 +142,11 @@ func (ps *PacketStream) checkLen(length uint16) bool {
 	return false
 }
 
+func (ps *PacketStream) GetLen() uint16 {
+	ps.Len = uint16(len(ps.Data))
+	return ps.Len
+}
+
 // Bool
 //	Int
 //	Int8

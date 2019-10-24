@@ -1,7 +1,7 @@
 package connect
 
 import (
-	packet2 "HelloWorld/io/network/packet"
+	"HelloWorld/io/network/connect"
 	"HelloWorld/io/network/route"
 	"HelloWorld/io/network/socket/stream"
 	"encoding/binary"
@@ -9,45 +9,13 @@ import (
 	"reflect"
 )
 
-var List = make(map[uint32]Connector, 1)
-
-var SaveChan = make(chan Connector)
-var DelChan = make(chan uint32)
-var BroadcastChan = make(chan interface{})
-
-func init() {
-
-	go func() {
-		for {
-			select {
-			case conn := <-SaveChan:
-				List[conn.ID] = conn
-			case ID := <-DelChan:
-				delete(List, ID)
-			case model := <-BroadcastChan:
-				for _, v := range List {
-					v.Send(model)
-				}
-			}
-		}
-	}()
-}
-
-func Save(conn Connector) {
-	SaveChan <- conn
-}
-func Del(ID uint32) {
-	DelChan <- ID
-}
-
 // 处理每个连接
 func (conn *Connector) Connected() {
 
 	//处理首次连接动作
-	beforeAction(conn)
+	conn.beforeAction()
 	// 处理连接断开后的动作
-	defer afterAction(conn.ID)
-
+	defer conn.afterAction()
 	for {
 		var buf = make([]byte, 8192)
 		_, err := conn.Conn.Read(buf)
@@ -59,8 +27,12 @@ func (conn *Connector) Connected() {
 		// 每次动作不一致都注册一个单独的动作来处理
 		ps := stream.PacketStream{}
 		ps.Len = binary.LittleEndian.Uint16(buf[0:2])
-		ps.Data = buf[2 : ps.Len+2]
-		ps.OpCode = ps.ReadUInt16()
+		ps.OpCode = binary.LittleEndian.Uint16(buf[2:4])
+		if uint16(len(buf)) < ps.Len+2 {
+			fmt.Println("数据不正确")
+			break
+		}
+		ps.Data = buf[4 : ps.Len+2]
 		f := route.Handle(ps.OpCode)
 		if f != nil {
 			in := ps.Unmarshal(f)
@@ -74,50 +46,43 @@ func (conn *Connector) Connected() {
 }
 
 // 建立连接时
-func beforeAction(conn *Connector) {
+func (conn *Connector) beforeAction() {
 
-	ps := stream.PacketStream{}
-	ps.Len = uint16(2)
-	ps.Data = []byte{0, 0}
-	ps.OpCode = ps.ReadUInt16()
-	f := route.Handle(ps.OpCode)
+	f := route.Handle(0)
 	if f != nil {
-		in := ps.Unmarshal(f)
-		in[len(in)-1] = reflect.ValueOf(conn)
+		in := make([]reflect.Value, 1)
+		in[0] = reflect.ValueOf(conn)
 		reflect.ValueOf(f).Call(in)
 	} else {
-		fmt.Println("没有设置连接包:", ps.OpCode)
+		fmt.Println("没有设置连接包:", 0)
 	}
 }
 
 // 准备断开连接
-func afterAction(ID uint32) {
+func (conn *Connector) afterAction() {
 
-	//todo 移除conn
-	Del(ID)
+	connect.Del(conn.ID)
 
-	ps := stream.PacketStream{}
-	ps.Len = uint16(2)
-	ps.Data = []byte{0, 0}
-	ps.OpCode = 1
-	f := route.Handle(ps.OpCode)
+	f := route.Handle(1)
 	if f != nil {
-		in := ps.Unmarshal(f)
-		in[len(in)-1] = reflect.ValueOf(ID)
+		//构造一个存放函数实参 Value 值的数纽
+		in := make([]reflect.Value, 1)
+		in[0] = reflect.ValueOf(conn.ID)
 		reflect.ValueOf(f).Call(in)
 	} else {
-		fmt.Println("没有设置连接包:", ps.OpCode)
+		fmt.Println("没有设置连接包:", 1)
 	}
 }
 
+// 发送数据包
 func (conn *Connector) Send(model interface{}) {
-	packetStream := stream.PacketStream{}
-	packetStream.Marshal(model)
-	data := make([]byte, 0)
-	data = append(data, WriteUint16(uint16(len(packetStream.Data)+2))...)
-	op := packet2.OpCode(model)
-	data = append(data, WriteUint16(op)...)
-	data = append(data, packetStream.Data...)
+	ps := stream.PacketStream{}
+	ps.Marshal(model)
+	//创建固定长度的数组节省内存
+	data := make([]byte, 0, ps.GetLen()+2)
+	data = append(data, connect.WriteUint16(ps.GetLen()+2)...)
+	data = append(data, connect.WriteUint16(ps.OpCode)...)
+	data = append(data, ps.Data...)
 
 	_, err := conn.Conn.Write(data)
 	if err != nil {
@@ -125,12 +90,6 @@ func (conn *Connector) Send(model interface{}) {
 	}
 }
 
-func Broadcast(model interface{}) {
-
-	BroadcastChan <- model
-
-}
-
-func WriteUint16(n uint16) []byte {
-	return []byte{byte(n), byte(n >> 8)}
+func (conn *Connector) GetId() uint32 {
+	return conn.ID
 }
