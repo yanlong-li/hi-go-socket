@@ -6,6 +6,6 @@ import (
 
 type Connector struct {
 	Conn *websocket.Conn
-	ID   uint32
+	ID   uint64
 	Type uint8
 }

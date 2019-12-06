@@ -4,6 +4,6 @@ import "net"
 
 type Connector struct {
 	Conn net.Conn
-	ID   uint32
+	ID   uint64
 	Type uint8
 }

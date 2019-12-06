@@ -29,12 +29,12 @@ func (conn *Connector) Connected() {
 		// 每次动作不一致都注册一个单独的动作来处理
 		ps := stream.PacketStream{}
 		ps.Len = binary.LittleEndian.Uint16(buf[0:2])
-		ps.OpCode = binary.LittleEndian.Uint16(buf[2:4])
+		ps.OpCode = binary.LittleEndian.Uint32(buf[2:6])
 		if uint16(len(buf)) < ps.Len+2 {
 			fmt.Println("数据不正确")
 			break
 		}
-		ps.Data = buf[4 : ps.Len+2]
+		ps.Data = buf[6 : ps.Len+2]
 		f := route.Handle(ps.OpCode)
 		if f != nil {
 			in := ps.Unmarshal(f)
@@ -85,7 +85,7 @@ func (conn *Connector) Send(model interface{}) {
 	//创建固定长度的数组节省内存
 	data := make([]byte, 0, ps.GetLen()+2)
 	data = append(data, connect.WriteUint16(ps.GetLen()+2)...)
-	data = append(data, connect.WriteUint16(ps.OpCode)...)
+	data = append(data, connect.Uint32ToHex(ps.OpCode)...)
 	data = append(data, ps.Data...)
 
 	_, err := conn.Conn.Write(data)
@@ -94,6 +94,13 @@ func (conn *Connector) Send(model interface{}) {
 	}
 }
 
-func (conn *Connector) GetId() uint32 {
+//获取连接id
+func (conn *Connector) GetId() uint64 {
 	return conn.ID
+}
+
+//广播数据包
+// yourself 是否广播给自己
+func (conn *Connector) Broadcast(model interface{}, yourself bool) {
+	connect.BroadcastChan <- connect.BroadcastModel{Model: model, Conn: conn, Self: yourself}
 }

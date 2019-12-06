@@ -11,7 +11,7 @@ func Register(packet, fun interface{}) {
 	routes[reflect.TypeOf(packet)] = fun
 }
 
-func Handle(op uint16) interface{} {
+func Handle(op uint32) interface{} {
 
 	p := packet.Packet(op)
 

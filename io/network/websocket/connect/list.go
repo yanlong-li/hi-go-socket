@@ -5,6 +5,7 @@ import (
 	"HelloWorld/io/network/packet"
 	"HelloWorld/io/network/route"
 	"HelloWorld/io/network/websocket/stream"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -28,15 +29,17 @@ func (conn *Connector) Connected() {
 			break
 		}
 		log.Printf("recv: %s", message)
+		// uint16 = 4 uint32 = 8 uint64 = 16
+		var OpCodeType uint8 = 8
 		//监听动作
-		if len(message) >= 4 {
-			OpCode, err := hex.DecodeString(string(message[0:4]))
+		if len(message) >= int(OpCodeType) {
+			OpCode, err := hex.DecodeString(string(message[0:OpCodeType]))
 			if err != nil {
 				fmt.Println("获取动作错误")
 			} else {
-				actionOp := uint16(OpCode[0])*256 + uint16(OpCode[1])
+				actionOp := binary.LittleEndian.Uint32(OpCode)
 				//p := packet.Packet(actionOp)
-				data := message[4:]
+				data := message[OpCodeType:]
 
 				f := route.Handle(actionOp)
 				if f != nil {
@@ -89,7 +92,7 @@ func (conn *Connector) Send(model interface{}) {
 	data := make([]byte, 0)
 	data = append(data, connect.WriteUint16(uint16(len(pd)+2))...)
 	op := packet.OpCode(model)
-	data = append(data, connect.WriteUint16(op)...)
+	data = append(data, connect.Uint32ToHex(op)...)
 	data = append(data, pd...)
 
 	err = conn.Conn.WriteMessage(2, data)
@@ -98,6 +101,12 @@ func (conn *Connector) Send(model interface{}) {
 	}
 }
 
-func (conn *Connector) GetId() uint32 {
+func (conn *Connector) GetId() uint64 {
 	return conn.ID
+}
+
+//广播数据包
+// yourself 是否广播给自己
+func (conn *Connector) Broadcast(model interface{}, yourself bool) {
+	connect.BroadcastChan <- connect.BroadcastModel{Model: model, Conn: conn, Self: yourself}
 }

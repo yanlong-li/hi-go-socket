@@ -4,6 +4,7 @@ import (
 	baseConnect "HelloWorld/io/network/connect"
 	"HelloWorld/io/network/websocket/connect"
 	"flag"
+	"fmt"
 	"gorilla/websocket"
 	"log"
 	"net/http"
@@ -17,7 +18,7 @@ var upGrader = websocket.Upgrader{
 	},
 }
 
-var i uint32 = 0
+var i uint64 = 0
 
 func Server(address string) {
 
@@ -25,7 +26,7 @@ func Server(address string) {
 
 	flag.Parse()
 	log.SetFlags(0)
-
+	fmt.Println("WS服务开启成功", address)
 	mux := http.NewServeMux()
 	server = &http.Server{
 		Addr:         *addr,

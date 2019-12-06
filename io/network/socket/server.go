@@ -16,9 +16,9 @@ func Server(address string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("服务开启成功", address)
+	fmt.Println("SOCKET服务开启成功", address)
 	defer service.Close()
-	var i uint32
+	var i uint64
 	for {
 		//time.Sleep(time.Second * 10)
 		if conn, err := service.Accept(); err != nil {

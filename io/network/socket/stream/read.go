@@ -23,7 +23,7 @@ func (ps *PacketStream) ReadUInt8() (data uint8) {
 // 读取 Uint16
 func (ps *PacketStream) ReadUInt16() (data uint16) {
 	if ps.checkLen(2) {
-		data = uint16(binary.LittleEndian.Uint16(ps.Data[ps.Index : ps.Index+2]))
+		data = binary.LittleEndian.Uint16(ps.Data[ps.Index : ps.Index+2])
 		ps.Index += 2
 		return
 	}
@@ -43,7 +43,7 @@ func (ps *PacketStream) ReadUInt32() (data uint32) {
 // 读取 Uint64
 func (ps *PacketStream) ReadUInt64() (data uint64) {
 	if ps.checkLen(8) {
-		data = uint64(binary.LittleEndian.Uint64(ps.Data[ps.Index : ps.Index+8]))
+		data = binary.LittleEndian.Uint64(ps.Data[ps.Index : ps.Index+8])
 		ps.Index += 8
 		return
 	}
