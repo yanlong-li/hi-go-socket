@@ -51,7 +51,8 @@ func UnmarshalConverter(field, field2 reflect.Value) reflect.Value {
 	case reflect.Uint32:
 		fallthrough
 	case reflect.Uint64:
-		field.SetUint(field2.Uint())
+		field.SetUint(uint64(field2.Float()))
+		//fallthrough
 	case reflect.Int8:
 		fallthrough
 	case reflect.Int16:
@@ -59,7 +60,8 @@ func UnmarshalConverter(field, field2 reflect.Value) reflect.Value {
 	case reflect.Int32:
 		fallthrough
 	case reflect.Int64:
-		field.SetInt(field2.Int())
+		//field.SetInt(field2.Int())
+		fallthrough
 	case reflect.Float32:
 		fallthrough
 	case reflect.Float64:
