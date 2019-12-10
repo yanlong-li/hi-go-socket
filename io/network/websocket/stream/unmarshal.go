@@ -30,8 +30,13 @@ func Unmarshal(f interface{}, data []byte) []reflect.Value {
 		// 创建一个reflect.value类型的params需要的指针类型的数据
 		elem := reflect.New(packet).Elem()
 
-		for k := 0; k < elem.NumField() && k < len(keys); k++ {
-			UnmarshalConverter(elem.FieldByName(keys[k].String()), value.MapIndex(keys[k]).Elem())
+		for k := 0; k < len(keys); k++ {
+			field := elem.FieldByName(keys[k].String())
+			if !field.IsValid() {
+				log.Println("未知字段：", keys[k].String())
+				break
+			}
+			UnmarshalConverter(field, value.MapIndex(keys[k]).Elem())
 		}
 		in[i] = elem
 	}
@@ -75,7 +80,7 @@ func UnmarshalConverter(field, field2 reflect.Value) reflect.Value {
 		}
 		field.Set(newV.Slice(1, newV.Len()))
 	default:
-		log.Fatal("未知类型", field.Kind())
+		log.Println("忽略一个未知类型:", field.Kind(), field.String())
 	}
 	return field
 
