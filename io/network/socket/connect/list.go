@@ -25,7 +25,6 @@ func (conn *Connector) Connected() {
 			fmt.Println("连接断开")
 			break
 		}
-		log.Print(buf[0:bufLen])
 		// 每次动作不一致都注册一个单独的动作来处理
 		ps := stream.PacketStream{}
 		ps.Len = binary.LittleEndian.Uint16(buf[0:2])
@@ -83,8 +82,8 @@ func (conn *Connector) Send(model interface{}) {
 	ps := stream.PacketStream{}
 	ps.Marshal(model)
 	//创建固定长度的数组节省内存
-	data := make([]byte, 0, ps.GetLen()+2)
-	data = append(data, connect.WriteUint16(ps.GetLen()+2)...)
+	data := make([]byte, 0, ps.GetLen()+4)
+	data = append(data, connect.WriteUint16(ps.GetLen()+4)...)
 	data = append(data, connect.Uint32ToHex(ps.OpCode)...)
 	data = append(data, ps.Data...)
 
