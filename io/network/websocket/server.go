@@ -33,7 +33,7 @@ func Server(address string) {
 		WriteTimeout: time.Second * 4,
 		Handler:      mux,
 	}
-	mux.HandleFunc("/ws", Connect)
+	mux.HandleFunc("/", Connect)
 	log.Fatal(server.ListenAndServe())
 }
 

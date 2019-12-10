@@ -29,10 +29,9 @@ func Unmarshal(f interface{}, data []byte) []reflect.Value {
 		packet := t.In(i)
 		// 创建一个reflect.value类型的params需要的指针类型的数据
 		elem := reflect.New(packet).Elem()
-		for k := 0; k < elem.NumField(); k++ {
-			field := elem.Field(k)
-			UnmarshalConverter(field, value.MapIndex(keys[k]).Elem())
-			//field.Set(field2)
+
+		for k := 0; k < elem.NumField() && k < len(keys); k++ {
+			UnmarshalConverter(elem.FieldByName(keys[k].String()), value.MapIndex(keys[k]).Elem())
 		}
 		in[i] = elem
 	}
