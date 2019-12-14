@@ -45,17 +45,18 @@ func (conn *Connector) Connected() {
 			if err != nil {
 				fmt.Println("获取动作错误")
 			} else {
-				actionOp := binary.LittleEndian.Uint32(OpCode)
-				//p := packet.Packet(actionOp)
+				opCode := binary.LittleEndian.Uint32(OpCode)
+				if !conn.RecvAction(opCode) {
+					continue
+				}
 				data := message[OpCodeType:]
-
-				f := route.Handle(actionOp)
+				f := route.Handle(opCode)
 				if f != nil {
 					in := stream.Unmarshal(f, data)
 					in[len(in)-1] = reflect.ValueOf(conn)
 					reflect.ValueOf(f).Call(in)
 				} else {
-					fmt.Println("未注册的包:", actionOp)
+					fmt.Println("未注册的包:", opCode)
 				}
 			}
 		} else {
@@ -92,6 +93,23 @@ func (conn *Connector) afterAction() {
 		reflect.ValueOf(f).Call(in)
 	} else {
 		fmt.Println("没有设置连接包:", 1)
+	}
+}
+
+// 收到数据包时
+func (conn *Connector) RecvAction(opCode uint32) bool {
+	f := route.Handle(2)
+	if f != nil {
+		in := make([]reflect.Value, 2)
+		in[0] = reflect.ValueOf(opCode)
+		in[1] = reflect.ValueOf(conn)
+		result := reflect.ValueOf(f).Call(in)
+		if len(result) >= 1 {
+			return result[0].Bool()
+		}
+		return false
+	} else {
+		return true
 	}
 }
 

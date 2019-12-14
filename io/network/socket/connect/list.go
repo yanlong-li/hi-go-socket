@@ -28,9 +28,12 @@ func (conn *Connector) Connected() {
 		ps := stream.PacketStream{}
 		ps.Len = binary.LittleEndian.Uint16(buf[0:2])
 		ps.OpCode = binary.LittleEndian.Uint32(buf[2:6])
+		if !conn.RecvAction(ps.OpCode) {
+			continue
+		}
 		if uint16(len(buf)) < ps.Len+2 {
 			fmt.Println("数据不正确")
-			break
+			continue
 		}
 		ps.Data = buf[6 : ps.Len+2]
 		f := route.Handle(ps.OpCode)
@@ -58,7 +61,7 @@ func (conn *Connector) beforeAction() {
 	}
 }
 
-// 准备断开连接
+// 断开连接时
 func (conn *Connector) afterAction() {
 
 	_ = conn.Conn.Close()
@@ -73,6 +76,23 @@ func (conn *Connector) afterAction() {
 		reflect.ValueOf(f).Call(in)
 	} else {
 		fmt.Println("没有设置连接包:", 1)
+	}
+}
+
+// 收到数据包时
+func (conn *Connector) RecvAction(opCode uint32) bool {
+	f := route.Handle(2)
+	if f != nil {
+		in := make([]reflect.Value, 2)
+		in[0] = reflect.ValueOf(opCode)
+		in[1] = reflect.ValueOf(conn)
+		result := reflect.ValueOf(f).Call(in)
+		if len(result) >= 1 {
+			return result[0].Bool()
+		}
+		return false
+	} else {
+		return true
 	}
 }
 
