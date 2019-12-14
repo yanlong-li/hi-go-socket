@@ -6,7 +6,6 @@ import (
 	"HelloWorld/io/network/socket/stream"
 	"encoding/binary"
 	"fmt"
-	"log"
 	"reflect"
 )
 
@@ -19,7 +18,7 @@ func (conn *Connector) Connected() {
 	defer conn.afterAction()
 	for {
 		var buf = make([]byte, 8192)
-		bufLen, err := conn.Conn.Read(buf)
+		_, err := conn.Conn.Read(buf)
 		if err != nil {
 			//log.Fatal(err)
 			fmt.Println("连接断开")
