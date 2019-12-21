@@ -7,7 +7,7 @@ import (
 
 // 批量查询
 func (orm *QueryBuilder) All() []interface{} {
-	rows, err := db.Query(orm.Sql())
+	rows, err := db.Query(orm.Sql(), orm.whereArgs...)
 	if err != nil {
 		log.Panic(err)
 	}

@@ -8,7 +8,7 @@ import (
 func (orm *QueryBuilder) One() {
 	// 准备查询字段
 	//todo 准备查询条件
-	row := db.QueryRow(orm.Sql())
+	row := db.QueryRow(orm.Sql(), orm.whereArgs...)
 
 	refs := refs(orm.model)
 	_ = row.Scan(refs...)
