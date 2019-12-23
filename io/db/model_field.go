@@ -1,32 +1,26 @@
 package db
 
 import (
-	"encoding/json"
 	"reflect"
 )
 
 // 处理字段
-func (orm *QueryBuilder) initField() {
+func (query *queryBuilder) scanFields() {
 
-	// 将模型解析成字节组
-	v2, _ := json.Marshal(orm.model)
-	// 定义恢复变量
-	var v3 interface{}
-	// 恢复到恢复变量
-	_ = json.Unmarshal(v2, &v3)
-	// 解析map数据
-	v5 := reflect.ValueOf(v3)
-	// 获取map中的keys
-	v6 := v5.MapKeys()
+	query.fields = []string{}
 
-	var v4 []string
-	var v7 string
-	for _, v := range v6 {
-		v4 = append(v4, snakeCase(v.String()))
-		v7 += "`" + snakeCase(v.String()) + "`,"
+	t1 := reflect.TypeOf(query.model).Elem()
+	for i := 0; i < t1.NumField(); i++ {
+		query.fields = append(query.fields, snakeCase(t1.Field(i).Name))
 	}
-	orm.selectFields = v7[0 : len(v7)-1]
 
-	orm.fields = v4
+}
 
+func (query *queryBuilder) getFields() string {
+	query.scanFields()
+	v7 := ""
+	for _, v := range query.fields {
+		v7 += "`" + snakeCase(v) + "`,"
+	}
+	return v7[0 : len(v7)-1]
 }

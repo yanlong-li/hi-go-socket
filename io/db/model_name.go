@@ -7,9 +7,9 @@ import (
 )
 
 // 处理表名
-func (orm *QueryBuilder) tableNames() {
-	orm.table = reflect.TypeOf(orm.model).Elem().Name()
-	orm.table = pluralizeTableName(orm.table)
+func (query *queryBuilder) tableNames() {
+	query.table = reflect.TypeOf(query.model).Elem().Name()
+	query.table = pluralizeTableName(query.table)
 }
 
 var tableNameRules = map[string]string{

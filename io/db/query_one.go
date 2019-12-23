@@ -1,26 +1,28 @@
 package db
 
 import (
+	"fmt"
 	"reflect"
 )
 
 // 查询单条
-func (orm *QueryBuilder) One() {
+func (query *queryBuilder) One() error {
 	// 准备查询字段
-	//todo 准备查询条件
-	row := db.QueryRow(orm.Sql(), orm.whereArgs...)
+	row := db.QueryRow(query.Sql(), query.queryArgs...)
+	fmt.Println(query.Sql(), query.queryArgs)
 
-	refs := refs(orm.model)
-	_ = row.Scan(refs...)
-	orm.row(refs)
+	refs := refs(query.model)
+	err := row.Scan(refs...)
+	query.row(refs)
+	return err
 }
 
 // 处理单条记录
-func (orm *QueryBuilder) row(refs []interface{}) {
+func (query *queryBuilder) row(refs []interface{}) {
 
-	v9 := reflect.ValueOf(orm.model)
+	v9 := reflect.ValueOf(query.model)
 	v10 := reflect.Indirect(v9)
-	for k, _ := range orm.fields {
+	for k, _ := range query.fields {
 		v11 := v10.Field(k)
 		unmarshalConverter(v11, refs[k])
 	}
