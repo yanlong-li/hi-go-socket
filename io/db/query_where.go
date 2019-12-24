@@ -9,8 +9,8 @@ import (
 // In
 func (query *queryBuilder) getWhere() string {
 	var where string
-	if len(query.where) > 0 {
-		where = "WHERE " + query.where
+	if len(query.argsSql) > 0 {
+		where = "WHERE " + query.argsSql
 	} else {
 		where = ""
 	}
@@ -59,10 +59,10 @@ func (query *queryBuilder) whereBuild(op string, args ...interface{}) {
 
 	_where := query.whereArgsAuto(args...)
 
-	if len(query.where) == 0 {
-		query.where = _where
+	if len(query.argsSql) == 0 {
+		query.argsSql = _where
 	} else {
-		query.where = "(" + query.where + ") " + op + " (" + _where + ")"
+		query.argsSql = "(" + query.argsSql + ") " + op + " (" + _where + ")"
 	}
 
 }
@@ -179,7 +179,7 @@ func (query *queryBuilder) whereValue2Str(inter interface{}) string {
 	var _value = "?"
 	switch value := inter.(type) {
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, string:
-		query.queryArgs = append(query.queryArgs, value)
+		query.args = append(query.args, value)
 	case []interface{}:
 		_tmp := ""
 		for _, _v := range value {

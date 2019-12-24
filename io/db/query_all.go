@@ -7,7 +7,7 @@ import (
 
 // 批量查询
 func (query *queryBuilder) All() []interface{} {
-	rows, err := db.Query(query.Sql(), query.queryArgs...)
+	rows, err := db.Query(query.SelectSql(), query.args...)
 	if err != nil {
 		log.Panic(err)
 	}

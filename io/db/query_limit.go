@@ -3,10 +3,10 @@ package db
 func (query *queryBuilder) Limit(offset uint64, args ...uint64) *queryBuilder {
 
 	query.limit = "LIMIT ?"
-	query.queryArgs = append(query.queryArgs, offset)
+	query.args = append(query.args, offset)
 	if len(args) >= 1 {
 		query.limit += ",?"
-		query.queryArgs = append(query.queryArgs, args[0])
+		query.args = append(query.args, args[0])
 	}
 	query.limit += " "
 	return query

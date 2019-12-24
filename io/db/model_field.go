@@ -24,3 +24,22 @@ func (query *queryBuilder) getFields() string {
 	}
 	return v7[0 : len(v7)-1]
 }
+
+func (query *queryBuilder) getNotListFields(args ...string) string {
+
+	ig := make(map[string]int)
+
+	for k, v := range args {
+		ig[v] = k
+	}
+
+	query.scanFields()
+	v7 := ""
+	for _, v := range query.fields {
+		if _, ok := ig[v]; ok {
+			continue
+		}
+		v7 += "`" + snakeCase(v) + "`,"
+	}
+	return v7[0 : len(v7)-1]
+}

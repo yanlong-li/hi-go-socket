@@ -5,10 +5,10 @@ type queryBuilder struct {
 	model interface{}
 	// 模型组
 	models []interface{}
-	// 查询条件
-	where     string
-	queryArgs []interface{}
-	fields    []string
+	// 查询条件 或 插入数据 的占位符
+	argsSql string
+	args    []interface{}
+	fields  []string
 	// 表名
 	table string
 

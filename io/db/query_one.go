@@ -8,8 +8,8 @@ import (
 // 查询单条
 func (query *queryBuilder) One() error {
 	// 准备查询字段
-	row := db.QueryRow(query.Sql(), query.queryArgs...)
-	fmt.Println(query.Sql(), query.queryArgs)
+	row := db.QueryRow(query.SelectSql(), query.args...)
+	fmt.Println(query.SelectSql(), query.args)
 
 	refs := refs(query.model)
 	err := row.Scan(refs...)
@@ -26,4 +26,12 @@ func (query *queryBuilder) row(refs []interface{}) {
 		v11 := v10.Field(k)
 		unmarshalConverter(v11, refs[k])
 	}
+}
+
+// 查询单条
+func (query *queryBuilder) Exists() bool {
+	if query.One() != nil {
+		return false
+	}
+	return true
 }
