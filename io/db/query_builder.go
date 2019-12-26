@@ -15,7 +15,7 @@ type queryBuilder struct {
 	limit string
 }
 
-func Find(model interface{}) *queryBuilder {
+func Model(model interface{}) *queryBuilder {
 	orm := new(queryBuilder)
 	orm.model = model
 	orm.tableNames()

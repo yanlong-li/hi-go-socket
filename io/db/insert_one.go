@@ -1,14 +1,11 @@
 package db
 
 import (
-	"fmt"
 	"reflect"
 )
 
 func (query *queryBuilder) Insert() error {
 	query.modelFillArgs()
-	fmt.Println(query.InsertSql())
-	fmt.Println(query.args...)
 	result, err := db.Exec(query.InsertSql(), query.args...)
 	if err != nil {
 		return err

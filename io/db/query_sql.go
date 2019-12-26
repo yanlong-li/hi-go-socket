@@ -13,3 +13,9 @@ func (query *queryBuilder) InsertSql() string {
 
 	return fmt.Sprintf("INSERT INTO %s(%s) value(%s)", query.table, query.getNotListFields("id"), query.argsSql)
 }
+
+// 返回 SQL
+func (query *queryBuilder) deleteSql() string {
+
+	return fmt.Sprintf("DELETE FROM %s %s", query.table, query.getWhere())
+}
