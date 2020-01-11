@@ -44,7 +44,6 @@ func (conn *Connector) Connected() {
 		if len(message) >= int(OpCodeType) {
 			OpCode, err := hex.DecodeString(string(message[0:OpCodeType]))
 			if err != nil {
-				_ = conn.Conn.WriteMessage(2, message)
 				fmt.Println("获取动作错误")
 			} else {
 				opCode := binary.LittleEndian.Uint32(OpCode)
