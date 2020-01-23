@@ -19,3 +19,9 @@
 
 #### 服务端源码地址：
     https://github.com/Yanlong-LI/HelloWorldServer
+    
+## 开源
+### Idea 开源使用授权许可
+本项目已获得 [Jetbrains](https://www.jetbrains.com/?from=HelloWorld-GO) 提供免费开源许可证，感谢。
+
+![img](doc/jetbrains.svg)
