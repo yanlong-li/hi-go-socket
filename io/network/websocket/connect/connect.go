@@ -1,10 +1,10 @@
 package connect
 
 import (
-	"gorilla/websocket"
+	"github.com/gorilla/websocket"
 )
 
-type Connector struct {
+type WebSocketConnector struct {
 	Conn *websocket.Conn
 	ID   uint64
 	Type uint8

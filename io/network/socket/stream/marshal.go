@@ -1,7 +1,7 @@
 package stream
 
 import (
-	packet2 "HelloWorld/io/network/packet"
+	packet2 "github.com/yanlong-li/HelloWorld-GO/io/network/packet"
 	"log"
 	"reflect"
 )

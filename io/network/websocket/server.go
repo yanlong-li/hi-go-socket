@@ -1,11 +1,11 @@
 package websocket
 
 import (
-	baseConnect "HelloWorld/io/network/connect"
-	"HelloWorld/io/network/websocket/connect"
 	"flag"
 	"fmt"
-	"gorilla/websocket"
+	"github.com/gorilla/websocket"
+	baseConnect "github.com/yanlong-li/HelloWorld-GO/io/network/connect"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/websocket/connect"
 	"log"
 	"net/http"
 	"time"
@@ -46,7 +46,7 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	}
 	i++
 	// 写入本地连接列表
-	connector := &connect.Connector{Conn: conn, ID: i}
+	connector := &connect.WebSocketConnector{Conn: conn, ID: i}
 	baseConnect.Add(connector)
 	go connector.Connected()
 }

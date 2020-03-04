@@ -1,7 +1,7 @@
 package route
 
 import (
-	"HelloWorld/io/network/packet"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
 	"reflect"
 )
 

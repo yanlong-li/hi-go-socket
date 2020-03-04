@@ -1,19 +1,19 @@
 package connect
 
 import (
-	"HelloWorld/io/network/connect"
-	"HelloWorld/io/network/packet"
-	"HelloWorld/io/network/route"
-	"HelloWorld/io/network/websocket/stream"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/route"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/websocket/stream"
 	"log"
 	"reflect"
 )
 
 // 处理每个连接
-func (conn *Connector) Connected() {
+func (conn *WebSocketConnector) Connected() {
 
 	//处理首次连接动作
 	conn.beforeAction()
@@ -67,7 +67,7 @@ func (conn *Connector) Connected() {
 }
 
 // 建立连接时
-func (conn *Connector) beforeAction() {
+func (conn *WebSocketConnector) beforeAction() {
 
 	f := route.Handle(0)
 	if f != nil {
@@ -80,7 +80,7 @@ func (conn *Connector) beforeAction() {
 }
 
 // 准备断开连接
-func (conn *Connector) afterAction() {
+func (conn *WebSocketConnector) afterAction() {
 
 	_ = conn.Conn.Close()
 
@@ -98,7 +98,7 @@ func (conn *Connector) afterAction() {
 }
 
 // 收到数据包时
-func (conn *Connector) RecvAction(opCode uint32) bool {
+func (conn *WebSocketConnector) RecvAction(opCode uint32) bool {
 	f := route.Handle(2)
 	if f != nil {
 		in := make([]reflect.Value, 2)
@@ -114,7 +114,7 @@ func (conn *Connector) RecvAction(opCode uint32) bool {
 	}
 }
 
-func (conn *Connector) Send(model interface{}) {
+func (conn *WebSocketConnector) Send(model interface{}) {
 	pd, err := stream.Marshal(model)
 	data := make([]byte, 0)
 	data = append(data, connect.WriteUint16(uint16(len(pd)+2))...)
@@ -128,12 +128,12 @@ func (conn *Connector) Send(model interface{}) {
 	}
 }
 
-func (conn *Connector) GetId() uint64 {
+func (conn *WebSocketConnector) GetId() uint64 {
 	return conn.ID
 }
 
 //广播数据包
 // yourself 是否广播给自己
-func (conn *Connector) Broadcast(model interface{}, yourself bool) {
+func (conn *WebSocketConnector) Broadcast(model interface{}, yourself bool) {
 	connect.BroadcastChan <- connect.BroadcastModel{Model: model, Conn: conn, Self: yourself}
 }

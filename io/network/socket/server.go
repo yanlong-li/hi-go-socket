@@ -1,9 +1,9 @@
 package socket
 
 import (
-	baseConnect "HelloWorld/io/network/connect"
-	"HelloWorld/io/network/socket/connect"
 	"fmt"
+	baseConnect "github.com/yanlong-li/HelloWorld-GO/io/network/connect"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/socket/connect"
 	"log"
 	"net"
 )
@@ -26,7 +26,7 @@ func Server(address string) {
 			break
 		} else {
 			// 写入本地连接列表
-			socketConnect := &connect.Connector{Conn: conn, ID: i}
+			socketConnect := &connect.SocketConnector{Conn: conn, ID: i}
 			baseConnect.Add(socketConnect)
 			go socketConnect.Connected()
 		}

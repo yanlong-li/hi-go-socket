@@ -1,16 +1,16 @@
 package connect
 
 import (
-	"HelloWorld/io/network/connect"
-	"HelloWorld/io/network/route"
-	"HelloWorld/io/network/socket/stream"
 	"encoding/binary"
 	"fmt"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/route"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/socket/stream"
 	"reflect"
 )
 
 // 处理每个连接
-func (conn *Connector) Connected() {
+func (conn *SocketConnector) Connected() {
 
 	//处理首次连接动作
 	conn.beforeAction()
@@ -59,7 +59,7 @@ func (conn *Connector) Connected() {
 }
 
 // 建立连接时
-func (conn *Connector) beforeAction() {
+func (conn *SocketConnector) beforeAction() {
 
 	f := route.Handle(0)
 	if f != nil {
@@ -72,7 +72,7 @@ func (conn *Connector) beforeAction() {
 }
 
 // 断开连接时
-func (conn *Connector) afterAction() {
+func (conn *SocketConnector) afterAction() {
 
 	_ = conn.Conn.Close()
 
@@ -90,7 +90,7 @@ func (conn *Connector) afterAction() {
 }
 
 // 收到数据包时
-func (conn *Connector) RecvAction(opCode uint32) bool {
+func (conn *SocketConnector) RecvAction(opCode uint32) bool {
 	f := route.Handle(2)
 	if f != nil {
 		in := make([]reflect.Value, 2)
@@ -107,7 +107,7 @@ func (conn *Connector) RecvAction(opCode uint32) bool {
 }
 
 // 发送数据包
-func (conn *Connector) Send(model interface{}) {
+func (conn *SocketConnector) Send(model interface{}) {
 	ps := stream.PacketStream{}
 	ps.Marshal(model)
 	//创建固定长度的数组节省内存
@@ -123,12 +123,12 @@ func (conn *Connector) Send(model interface{}) {
 }
 
 //获取连接id
-func (conn *Connector) GetId() uint64 {
+func (conn *SocketConnector) GetId() uint64 {
 	return conn.ID
 }
 
 //广播数据包
 // yourself 是否广播给自己
-func (conn *Connector) Broadcast(model interface{}, yourself bool) {
+func (conn *SocketConnector) Broadcast(model interface{}, yourself bool) {
 	connect.BroadcastChan <- connect.BroadcastModel{Model: model, Conn: conn, Self: yourself}
 }

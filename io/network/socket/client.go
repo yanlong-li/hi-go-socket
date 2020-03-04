@@ -1,8 +1,8 @@
 package socket
 
 import (
-	"HelloWorld/io/network/socket/connect"
 	"fmt"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/socket/connect"
 	"log"
 	"net"
 )
@@ -17,6 +17,6 @@ func Client(address string) {
 	}
 	fmt.Println("已连接到服务器")
 	// 写入本地连接列表
-	connector := connect.Connector{Conn: conn}
+	connector := connect.SocketConnector{Conn: conn}
 	connector.Connected()
 }
