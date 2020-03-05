@@ -3,7 +3,9 @@ package connect
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/yanlong-li/HelloWorld-GO/io/logger"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/route"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/socket/stream"
 	"reflect"
@@ -13,9 +15,9 @@ import (
 func (conn *SocketConnector) Connected() {
 
 	//处理首次连接动作
-	conn.beforeAction()
+	conn.ConnectedAction()
 	// 处理连接断开后的动作
-	defer conn.afterAction()
+	defer conn.DisconnectAction()
 
 	defer func() { // 必须要先声明defer，否则不能捕获到panic异常
 		fmt.Println("一个连接发生异常")
@@ -34,34 +36,44 @@ func (conn *SocketConnector) Connected() {
 			fmt.Println("连接断开")
 			break
 		}
-		// 每次动作不一致都注册一个单独的动作来处理
-		ps := stream.PacketStream{}
-		ps.Len = binary.LittleEndian.Uint16(buf[0:2])
-		ps.OpCode = binary.LittleEndian.Uint32(buf[2:6])
-		if !conn.RecvAction(ps.OpCode) {
-			continue
-		}
-		if uint16(len(buf)) < ps.Len+2 {
-			fmt.Println("数据不正确")
-			continue
-		}
-		ps.Data = buf[6 : ps.Len+2]
-		f := route.Handle(ps.OpCode)
-		if f != nil {
-			in := ps.Unmarshal(f)
-			in[len(in)-1] = reflect.ValueOf(conn)
-			go reflect.ValueOf(f).Call(in)
-		} else {
-			fmt.Println("未注册的包:", ps.OpCode)
-		}
+		conn.HandleData(buf)
 
 	}
 }
 
-// 建立连接时
-func (conn *SocketConnector) beforeAction() {
+// 处理数据包
+// 将数据处理流程拆分成独立公开的方法，方便二次调用
+func (conn *SocketConnector) HandleData(data []byte) {
 
-	f := route.Handle(0)
+	// 每次动作不一致都注册一个单独的动作来处理
+	ps := stream.SocketPacketStream{}
+	ps.Len = binary.LittleEndian.Uint16(data[0:2])
+	ps.OpCode = binary.LittleEndian.Uint32(data[2:6])
+
+	if uint16(len(data)) < ps.Len+2 {
+		logger.Debug("数据不正确", 0)
+		return
+	}
+	ps.Data = data[6 : ps.Len+2]
+
+	if !conn.RecvAction(ps.OpCode, ps.Data) {
+		return
+	}
+
+	f := route.Handle(ps.OpCode)
+	if f != nil {
+		in := ps.Unmarshal(f)
+		in[len(in)-1] = reflect.ValueOf(conn)
+		go reflect.ValueOf(f).Call(in)
+	} else {
+		logger.Debug("未注册的包", 0, ps.OpCode)
+	}
+}
+
+// 建立连接时
+func (conn *SocketConnector) ConnectedAction() {
+
+	f := route.Handle(packet.CONNECTION)
 	if f != nil {
 		in := make([]reflect.Value, 1)
 		in[0] = reflect.ValueOf(conn)
@@ -72,13 +84,13 @@ func (conn *SocketConnector) beforeAction() {
 }
 
 // 断开连接时
-func (conn *SocketConnector) afterAction() {
+func (conn *SocketConnector) DisconnectAction() {
 
 	_ = conn.Conn.Close()
 
 	connect.Del(conn.ID)
 
-	f := route.Handle(1)
+	f := route.Handle(packet.DISCONNECTION)
 	if f != nil {
 		//构造一个存放函数实参 Value 值的数纽
 		in := make([]reflect.Value, 1)
@@ -90,12 +102,13 @@ func (conn *SocketConnector) afterAction() {
 }
 
 // 收到数据包时
-func (conn *SocketConnector) RecvAction(opCode uint32) bool {
-	f := route.Handle(2)
+func (conn *SocketConnector) RecvAction(opCode uint32, data []byte) bool {
+	f := route.Handle(packet.BEFORE_RECVING)
 	if f != nil {
 		in := make([]reflect.Value, 2)
 		in[0] = reflect.ValueOf(opCode)
-		in[1] = reflect.ValueOf(conn)
+		in[1] = reflect.ValueOf(data)
+		in[2] = reflect.ValueOf(conn)
 		result := reflect.ValueOf(f).Call(in)
 		if len(result) >= 1 {
 			return result[0].Bool()
@@ -108,17 +121,26 @@ func (conn *SocketConnector) RecvAction(opCode uint32) bool {
 
 // 发送数据包
 func (conn *SocketConnector) Send(model interface{}) {
-	ps := stream.PacketStream{}
+	ps := stream.SocketPacketStream{}
 	ps.Marshal(model)
-	//创建固定长度的数组节省内存
-	data := make([]byte, 0, ps.GetLen()+4)
-	data = append(data, connect.WriteUint16(ps.GetLen()+4)...)
-	data = append(data, connect.Uint32ToHex(ps.OpCode)...)
-	data = append(data, ps.Data...)
+	// 封包
+	data := ps.ToData()
+
+	// 发送之前进行数据处理：加密、压缩
+	f := route.Handle(packet.BEFORE_SENDING)
+	if f != nil {
+		in := make([]reflect.Value, 2)
+		in[0] = reflect.ValueOf(ps.OpCode)
+		in[1] = reflect.ValueOf(data)
+		result := reflect.ValueOf(f).Call(in)
+		if len(result) >= 1 {
+			data = result[0].Bytes()
+		}
+	}
 
 	_, err := conn.Conn.Write(data)
 	if err != nil {
-		fmt.Println("发送数据失败", err)
+		logger.Debug("发送数据失败", 0)
 	}
 }
 

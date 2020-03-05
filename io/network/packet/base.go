@@ -16,9 +16,9 @@ func Register(op uint32, packet interface{}) {
 	RPackets[reflect.TypeOf(packet)] = op
 }
 
-func OpCode(packet interface{}) uint32 {
+func OpCode(PacketModel interface{}) uint32 {
 
-	elem := reflect.TypeOf(packet)
+	elem := reflect.TypeOf(PacketModel)
 
 	if v, ok := RPackets[elem]; ok {
 		return v

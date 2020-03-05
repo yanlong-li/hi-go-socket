@@ -14,12 +14,14 @@ type BroadcastModel struct {
 }
 
 type Connector interface {
-	Send(interface{})
 	Connected()
-	//AfterAction()
-	//BeforeAction()
+	Send(interface{})
+	ConnectedAction()
+	DisconnectAction()
 	GetId() uint64
 	Broadcast(interface{}, bool)
+	HandleData([]byte)
+	RecvAction(uint32, []byte) bool
 }
 
 const (

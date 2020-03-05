@@ -6,7 +6,7 @@ import (
 )
 
 // 从字节流中反射出对应的结构体并注入到指定方法中
-func (ps *PacketStream) Unmarshal(f interface{}) []reflect.Value {
+func (ps *SocketPacketStream) Unmarshal(f interface{}) []reflect.Value {
 	t := reflect.TypeOf(f)
 	//构造一个存放函数实参 Value 值的数纽
 	in := make([]reflect.Value, t.NumIn())
@@ -26,7 +26,7 @@ func (ps *PacketStream) Unmarshal(f interface{}) []reflect.Value {
 	return in
 }
 
-func (ps *PacketStream) UnmarshalConverter(field reflect.Value) reflect.Value {
+func (ps *SocketPacketStream) UnmarshalConverter(field reflect.Value) reflect.Value {
 
 	switch field.Kind() {
 	case reflect.String:

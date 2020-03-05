@@ -1,22 +1,22 @@
 package stream
 
 import (
-	packet2 "github.com/yanlong-li/HelloWorld-GO/io/network/packet"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
 	"log"
 	"reflect"
 )
 
 //将包结构体反射写入字节流中
-func (ps *PacketStream) Marshal(packet interface{}) {
-	ps.OpCode = packet2.OpCode(packet)
+func (ps *SocketPacketStream) Marshal(PacketModel interface{}) {
+	ps.OpCode = packet.OpCode(PacketModel)
 
-	elem := reflect.ValueOf(packet)
+	elem := reflect.ValueOf(PacketModel)
 	for k := 0; k < elem.NumField(); k++ {
 		field := elem.Field(k)
 		ps.MarshalConverter(field)
 	}
 }
-func (ps *PacketStream) MarshalConverter(field reflect.Value) {
+func (ps *SocketPacketStream) MarshalConverter(field reflect.Value) {
 	switch field.Kind() {
 	case reflect.String:
 		ps.WriteString(field.String())
