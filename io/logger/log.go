@@ -32,37 +32,37 @@ func create(level uint8, msg string, code uint, data ...interface{}) *Log {
 
 //所有日志
 func All(msg string, code uint, data ...interface{}) {
-	log := create(DEBUG, msg, code, data)
+	log := create(DEBUG, msg, code, data...)
 	log.handel()
 }
 
 //跟踪日志
 func Trace(msg string, code uint, data ...interface{}) {
-	log := create(TRACE, msg, code, data)
+	log := create(TRACE, msg, code, data...)
 	log.handel()
 }
 
 //调试日志
 func Debug(msg string, code uint, data ...interface{}) {
-	log := create(DEBUG, msg, code, data)
+	log := create(DEBUG, msg, code, data...)
 	log.handel()
 }
 
 //信息日志
 func Info(msg string, code uint, data ...interface{}) {
-	log := create(INFO, msg, code, data)
+	log := create(INFO, msg, code, data...)
 	log.handel()
 }
 
 //警告日志
 func Warning(msg string, code uint, data ...interface{}) {
-	log := create(WARNING, msg, code, data)
+	log := create(WARNING, msg, code, data...)
 	log.handel()
 }
 
 //致命日志
 func Fatal(msg string, code uint, data ...interface{}) {
-	log := create(FATAL, msg, code, data)
+	log := create(FATAL, msg, code, data...)
 	log.handel()
 }
 
