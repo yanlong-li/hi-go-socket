@@ -11,7 +11,7 @@ type SocketPacketStream struct {
 
 func (sps *SocketPacketStream) ToData() []byte {
 	//创建固定长度的数组节省内存
-	data := make([]byte, 0, sps.GetLen()+4)
+	var data []byte
 	data = append(data, connect.WriteUint16(sps.GetLen()+4)...)
 	data = append(data, connect.Uint32ToHex(sps.OpCode)...)
 	data = append(data, sps.Data...)

@@ -63,7 +63,7 @@ func (conn *SocketConnector) HandleData(data []byte) {
 	f := route.Handle(ps.OpCode)
 	if f != nil {
 		in := ps.Unmarshal(f)
-		in[len(in)-1] = reflect.ValueOf(conn)
+		in = append(in, reflect.ValueOf(conn))
 		go reflect.ValueOf(f).Call(in)
 	} else {
 		logger.Debug("未注册的包", 0, ps.OpCode)
@@ -75,11 +75,11 @@ func (conn *SocketConnector) ConnectedAction() {
 
 	f := route.Handle(packet.CONNECTION)
 	if f != nil {
-		in := make([]reflect.Value, 1)
-		in[0] = reflect.ValueOf(conn)
+		var in []reflect.Value
+		in = append(in, reflect.ValueOf(conn))
 		reflect.ValueOf(f).Call(in)
 	} else {
-		fmt.Println("没有设置连接包:", 0)
+		logger.Debug("没有设置连接成功动作:", 1)
 	}
 }
 
@@ -88,16 +88,17 @@ func (conn *SocketConnector) DisconnectAction() {
 
 	_ = conn.Conn.Close()
 
-	connect.Del(conn.ID)
+	go connect.Del(conn.ID)
+	go connect.AddIdleSequenceId(conn.ID)
 
 	f := route.Handle(packet.DISCONNECTION)
 	if f != nil {
 		//构造一个存放函数实参 Value 值的数纽
-		in := make([]reflect.Value, 1)
-		in[0] = reflect.ValueOf(conn.ID)
+		var in []reflect.Value
+		in = append(in, reflect.ValueOf(conn.ID))
 		reflect.ValueOf(f).Call(in)
 	} else {
-		fmt.Println("没有设置连接包:", 1)
+		logger.Debug("没有设置断开连接动作:", 1)
 	}
 }
 
@@ -105,10 +106,11 @@ func (conn *SocketConnector) DisconnectAction() {
 func (conn *SocketConnector) RecvAction(opCode uint32, data []byte) bool {
 	f := route.Handle(packet.BEFORE_RECVING)
 	if f != nil {
-		in := make([]reflect.Value, 2)
-		in[0] = reflect.ValueOf(opCode)
-		in[1] = reflect.ValueOf(data)
-		in[2] = reflect.ValueOf(conn)
+		var in []reflect.Value
+		in = append(in, reflect.ValueOf(opCode))
+		in = append(in, reflect.ValueOf(data))
+		in = append(in, reflect.ValueOf(conn))
+
 		result := reflect.ValueOf(f).Call(in)
 		if len(result) >= 1 {
 			return result[0].Bool()
@@ -129,9 +131,10 @@ func (conn *SocketConnector) Send(model interface{}) {
 	// 发送之前进行数据处理：加密、压缩
 	f := route.Handle(packet.BEFORE_SENDING)
 	if f != nil {
-		in := make([]reflect.Value, 2)
-		in[0] = reflect.ValueOf(ps.OpCode)
-		in[1] = reflect.ValueOf(data)
+		var in []reflect.Value
+		in = append(in, reflect.ValueOf(ps.OpCode))
+		in = append(in, reflect.ValueOf(data))
+
 		result := reflect.ValueOf(f).Call(in)
 		if len(result) >= 1 {
 			data = result[0].Bytes()

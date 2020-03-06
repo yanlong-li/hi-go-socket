@@ -1,11 +1,15 @@
 package connect
 
-var List = make(map[uint64]Connector, 1)
+var connectList = make(map[uint64]Connector)
 
-//
-var AddChan = make(chan Connector)
-var DelChan = make(chan uint64)
-var BroadcastChan = make(chan BroadcastModel)
+// 添加连接通道
+var AddChan = make(chan Connector, 10)
+
+//删除连接通道
+var DelChan = make(chan uint64, 10)
+
+//广播通道
+var BroadcastChan = make(chan BroadcastModel, 10)
 
 type BroadcastModel struct {
 	Conn  Connector
@@ -35,12 +39,12 @@ func init() {
 		for {
 			select {
 			case conn := <-AddChan:
-				List[conn.GetId()] = conn
+				connectList[conn.GetId()] = conn
 			case ID := <-DelChan:
-				delete(List, ID)
+				delete(connectList, ID)
 			case BM := <-BroadcastChan:
 
-				for id, v := range List {
+				for id, v := range connectList {
 
 					//不含自己 则不发送给自己
 					if BM.Self == false && id == BM.Conn.GetId() {

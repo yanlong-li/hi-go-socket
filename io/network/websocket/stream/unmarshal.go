@@ -11,7 +11,7 @@ import (
 func Unmarshal(f interface{}, data []byte) []reflect.Value {
 	t := reflect.TypeOf(f)
 	//构造一个存放函数实参 Value 值的数纽
-	in := make([]reflect.Value, t.NumIn())
+	var in []reflect.Value
 
 	var p interface{}
 	err := json.Unmarshal(data, &p)
@@ -38,7 +38,7 @@ func Unmarshal(f interface{}, data []byte) []reflect.Value {
 			}
 			UnmarshalConverter(field, value.MapIndex(keys[k]).Elem())
 		}
-		in[i] = elem
+		in = append(in, elem)
 	}
 	return in
 }

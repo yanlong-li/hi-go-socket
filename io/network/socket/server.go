@@ -18,7 +18,7 @@ func Server(address string) {
 	}
 	fmt.Println("SOCKET服务开启成功", address)
 	defer service.Close()
-	var i uint64
+
 	for {
 		//time.Sleep(time.Second * 10)
 		if conn, err := service.Accept(); err != nil {
@@ -26,11 +26,10 @@ func Server(address string) {
 			break
 		} else {
 			// 写入本地连接列表
-			socketConnect := &connect.SocketConnector{Conn: conn, ID: i}
-			baseConnect.Add(socketConnect)
+			socketConnect := &connect.SocketConnector{Conn: conn, ID: baseConnect.GetAutoSequenceID()}
+			go baseConnect.Add(socketConnect)
 			go socketConnect.Connected()
 		}
-		i++
 
 	}
 

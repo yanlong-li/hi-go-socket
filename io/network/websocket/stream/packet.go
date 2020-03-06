@@ -16,7 +16,7 @@ func (wsps *WebSocketPacketStream) GetLen() uint16 {
 
 func (wsps *WebSocketPacketStream) ToData() []byte {
 	//创建固定长度的数组节省内存
-	data := make([]byte, 0, wsps.GetLen()+4)
+	var data []byte
 	data = append(data, connect.WriteUint16(wsps.GetLen()+4)...)
 	data = append(data, connect.Uint32ToHex(wsps.OpCode)...)
 	data = append(data, wsps.Data...)

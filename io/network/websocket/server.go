@@ -19,8 +19,6 @@ var upGrader = websocket.Upgrader{
 	EnableCompression: true,
 }
 
-var i uint64 = 0
-
 func Server(address string) {
 
 	var addr = flag.String("addr", address, "http service address")
@@ -44,9 +42,9 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 		log.Print("upgrade:", err)
 		return
 	}
-	i++
+
 	// 写入本地连接列表
-	connector := &connect.WebSocketConnector{Conn: conn, ID: i}
-	baseConnect.Add(connector)
+	connector := &connect.WebSocketConnector{Conn: conn, ID: baseConnect.GetAutoSequenceID()}
+	go baseConnect.Add(connector)
 	go connector.Connected()
 }

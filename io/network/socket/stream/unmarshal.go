@@ -9,7 +9,7 @@ import (
 func (ps *SocketPacketStream) Unmarshal(f interface{}) []reflect.Value {
 	t := reflect.TypeOf(f)
 	//构造一个存放函数实参 Value 值的数纽
-	in := make([]reflect.Value, t.NumIn())
+	var in []reflect.Value
 	// 取出所有需要注入的依赖参数
 	for i := 0; i < t.NumIn()-1; i++ {
 		// 获取顺序的 参数
@@ -21,7 +21,7 @@ func (ps *SocketPacketStream) Unmarshal(f interface{}) []reflect.Value {
 			value := ps.UnmarshalConverter(field)
 			field.Set(value)
 		}
-		in[i] = elem
+		in = append(in, elem)
 	}
 	return in
 }
