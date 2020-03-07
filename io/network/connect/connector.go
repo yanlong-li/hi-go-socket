@@ -1,5 +1,9 @@
 package connect
 
+import (
+	"github.com/yanlong-li/HelloWorld-GO/io/network/stream"
+)
+
 var connectList = make(map[uint64]Connector)
 
 // 添加连接通道
@@ -11,12 +15,14 @@ var DelChan = make(chan uint64, 10)
 //广播通道
 var BroadcastChan = make(chan BroadcastModel, 10)
 
+//广播模型
 type BroadcastModel struct {
 	Conn  Connector
 	Model interface{}
 	Self  bool
 }
 
+//连接器接口
 type Connector interface {
 	Connected()
 	Send(interface{})
@@ -25,7 +31,7 @@ type Connector interface {
 	GetId() uint64
 	Broadcast(interface{}, bool)
 	HandleData([]byte)
-	RecvAction(uint32, []byte) bool
+	RecvAction(stream.BaseStream) bool
 }
 
 const (
@@ -64,19 +70,6 @@ func Del(ID uint64) {
 	DelChan <- ID
 }
 
-func WriteUint16(n uint16) []byte {
-	return []byte{byte(n), byte(n >> 8)}
-}
-
-func Uint32ToHex(n uint32) []byte {
-	return []byte{
-		byte(n),
-		byte(n >> 8),
-		byte(n >> 16),
-		byte(n >> 24),
-	}
-}
-
-func Broadcast(model interface{}) {
-	BroadcastChan <- BroadcastModel{Model: model, Self: true}
+func Broadcast(model BroadcastModel) {
+	BroadcastChan <- model
 }

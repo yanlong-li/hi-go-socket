@@ -8,13 +8,16 @@ import (
 
 //将包结构体反射写入字节流中
 func (ps *SocketPacketStream) Marshal(PacketModel interface{}) {
-	ps.OpCode = packet.OpCode(PacketModel)
+	ps.SetData([]byte{})
+
+	ps.SetOpCode(packet.OpCode(PacketModel))
 
 	elem := reflect.ValueOf(PacketModel)
 	for k := 0; k < elem.NumField(); k++ {
 		field := elem.Field(k)
 		ps.MarshalConverter(field)
 	}
+	ps.SetLen(uint16(len(ps.GetData())))
 }
 func (ps *SocketPacketStream) MarshalConverter(field reflect.Value) {
 	switch field.Kind() {

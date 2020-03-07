@@ -8,6 +8,7 @@ import (
 	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/route"
+	baseStream "github.com/yanlong-li/HelloWorld-GO/io/network/stream"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/websocket/stream"
 	"log"
 	"reflect"
@@ -44,7 +45,6 @@ func (conn *WebSocketConnector) Connected() {
 }
 
 // 处理数据包
-// 将数据处理流程拆分成独立公开的方法，方便二次调用
 func (conn *WebSocketConnector) HandleData(buf []byte) {
 	// uint16 = 4 uint32 = 8 uint64 = 16
 	var OpCodeType uint8 = 8
@@ -54,19 +54,22 @@ func (conn *WebSocketConnector) HandleData(buf []byte) {
 		if err != nil {
 			logger.Debug("获取动作错误", 0)
 		} else {
-			opCode := binary.LittleEndian.Uint32(OpCode)
-			data := buf[OpCodeType:]
-			if !conn.RecvAction(opCode, data) {
+
+			wsps := stream.WebSocketPacketStream{}
+
+			wsps.OpCode = binary.LittleEndian.Uint32(OpCode)
+			wsps.SetData(buf[OpCodeType:])
+			if !conn.RecvAction(wsps.BaseStream) {
 				return
 			}
 
-			f := route.Handle(opCode)
+			f := route.Handle(wsps.OpCode)
 			if f != nil {
-				in := stream.Unmarshal(f, data)
-				in[len(in)-1] = reflect.ValueOf(conn)
+				in := wsps.Unmarshal(f)
+				in = append(in, reflect.ValueOf(conn))
 				reflect.ValueOf(f).Call(in)
 			} else {
-				logger.Debug("未注册的包", 0, opCode)
+				logger.Debug("未注册的包", 0, wsps.OpCode)
 			}
 		}
 	} else {
@@ -107,12 +110,12 @@ func (conn *WebSocketConnector) DisconnectAction() {
 }
 
 // 收到数据包时
-func (conn *WebSocketConnector) RecvAction(opCode uint32, data []byte) bool {
+func (conn *WebSocketConnector) RecvAction(bs baseStream.BaseStream) bool {
 	f := route.Handle(packet.BEFORE_RECVING)
 	if f != nil {
 		var in []reflect.Value
-		in = append(in, reflect.ValueOf(opCode))
-		in = append(in, reflect.ValueOf(conn))
+		in = append(in, reflect.ValueOf(bs))
+		in = append(in, reflect.ValueOf(*conn))
 		result := reflect.ValueOf(f).Call(in)
 		if len(result) >= 1 {
 			return result[0].Bool()
@@ -123,6 +126,7 @@ func (conn *WebSocketConnector) RecvAction(opCode uint32, data []byte) bool {
 	}
 }
 
+// 发送数据包
 func (conn *WebSocketConnector) Send(PacketModel interface{}) {
 	ps := stream.WebSocketPacketStream{}
 	ps.Marshal(PacketModel)
@@ -132,8 +136,7 @@ func (conn *WebSocketConnector) Send(PacketModel interface{}) {
 	f := route.Handle(packet.BEFORE_SENDING)
 	if f != nil {
 		var in []reflect.Value
-		in = append(in, reflect.ValueOf(ps.OpCode))
-		in = append(in, reflect.ValueOf(data))
+		in = append(in, reflect.ValueOf(ps))
 		result := reflect.ValueOf(f).Call(in)
 		if len(result) >= 1 {
 			data = result[0].Bytes()
@@ -146,12 +149,7 @@ func (conn *WebSocketConnector) Send(PacketModel interface{}) {
 	}
 }
 
-func (conn *WebSocketConnector) GetId() uint64 {
-	return conn.ID
-}
-
 //广播数据包
-// yourself 是否广播给自己
 func (conn *WebSocketConnector) Broadcast(model interface{}, yourself bool) {
-	connect.BroadcastChan <- connect.BroadcastModel{Model: model, Conn: conn, Self: yourself}
+	go connect.Broadcast(connect.BroadcastModel{Model: model, Conn: conn, Self: yourself})
 }

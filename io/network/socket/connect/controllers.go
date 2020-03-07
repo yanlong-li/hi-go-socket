@@ -8,6 +8,7 @@ import (
 	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/route"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/socket/stream"
+	baseStream "github.com/yanlong-li/HelloWorld-GO/io/network/stream"
 	"reflect"
 )
 
@@ -19,14 +20,14 @@ func (conn *SocketConnector) Connected() {
 	// 处理连接断开后的动作
 	defer conn.DisconnectAction()
 
-	defer func() { // 必须要先声明defer，否则不能捕获到panic异常
-		fmt.Println("一个连接发生异常")
-		if err := recover(); err != nil {
-			fmt.Println(err) // 这里的err其实就是panic传入的内容
-		}
-		_ = conn.Conn.Close()
-		fmt.Println("断开连接")
-	}()
+	//defer func() { // 必须要先声明defer，否则不能捕获到panic异常
+	//	fmt.Println("一个连接发生异常")
+	//	if err := recover(); err != nil {
+	//		fmt.Println(err) // 这里的err其实就是panic传入的内容
+	//	}
+	//	_ = conn.Conn.Close()
+	//	fmt.Println("断开连接")
+	//}()
 
 	for {
 		var buf = make([]byte, 8192)
@@ -42,21 +43,26 @@ func (conn *SocketConnector) Connected() {
 }
 
 // 处理数据包
-// 将数据处理流程拆分成独立公开的方法，方便二次调用
 func (conn *SocketConnector) HandleData(data []byte) {
 
-	// 每次动作不一致都注册一个单独的动作来处理
-	ps := stream.SocketPacketStream{}
-	ps.Len = binary.LittleEndian.Uint16(data[0:2])
-	ps.OpCode = binary.LittleEndian.Uint32(data[2:6])
-
-	if uint16(len(data)) < ps.Len+2 {
+	//2byte的uint16长度+4byte的uint64OpCode码
+	if len(data) < 6 {
 		logger.Debug("数据不正确", 0)
 		return
 	}
-	ps.Data = data[6 : ps.Len+2]
 
-	if !conn.RecvAction(ps.OpCode, ps.Data) {
+	// 每次动作不一致都注册一个单独的动作来处理
+	ps := stream.SocketPacketStream{}
+	ps.SetLen(binary.LittleEndian.Uint16(data[0:2]))
+	ps.SetOpCode(binary.LittleEndian.Uint32(data[2:6]))
+
+	if uint16(len(data)) < ps.GetLen()+2 {
+		logger.Debug("数据流不完整", 0)
+		return
+	}
+	ps.SetData(data[6 : ps.GetLen()+2])
+
+	if !conn.RecvAction(ps.BaseStream) {
 		return
 	}
 
@@ -83,7 +89,7 @@ func (conn *SocketConnector) ConnectedAction() {
 	}
 }
 
-// 断开连接时
+// 准备断开连接
 func (conn *SocketConnector) DisconnectAction() {
 
 	_ = conn.Conn.Close()
@@ -103,14 +109,12 @@ func (conn *SocketConnector) DisconnectAction() {
 }
 
 // 收到数据包时
-func (conn *SocketConnector) RecvAction(opCode uint32, data []byte) bool {
+func (conn *SocketConnector) RecvAction(bs baseStream.BaseStream) bool {
 	f := route.Handle(packet.BEFORE_RECVING)
 	if f != nil {
 		var in []reflect.Value
-		in = append(in, reflect.ValueOf(opCode))
-		in = append(in, reflect.ValueOf(data))
+		in = append(in, reflect.ValueOf(bs))
 		in = append(in, reflect.ValueOf(conn))
-
 		result := reflect.ValueOf(f).Call(in)
 		if len(result) >= 1 {
 			return result[0].Bool()
@@ -123,7 +127,8 @@ func (conn *SocketConnector) RecvAction(opCode uint32, data []byte) bool {
 
 // 发送数据包
 func (conn *SocketConnector) Send(model interface{}) {
-	ps := stream.SocketPacketStream{}
+
+	ps := &stream.SocketPacketStream{}
 	ps.Marshal(model)
 	// 封包
 	data := ps.ToData()
@@ -132,8 +137,7 @@ func (conn *SocketConnector) Send(model interface{}) {
 	f := route.Handle(packet.BEFORE_SENDING)
 	if f != nil {
 		var in []reflect.Value
-		in = append(in, reflect.ValueOf(ps.OpCode))
-		in = append(in, reflect.ValueOf(data))
+		in = append(in, reflect.ValueOf(ps))
 
 		result := reflect.ValueOf(f).Call(in)
 		if len(result) >= 1 {
@@ -147,13 +151,7 @@ func (conn *SocketConnector) Send(model interface{}) {
 	}
 }
 
-//获取连接id
-func (conn *SocketConnector) GetId() uint64 {
-	return conn.ID
-}
-
 //广播数据包
-// yourself 是否广播给自己
 func (conn *SocketConnector) Broadcast(model interface{}, yourself bool) {
-	connect.BroadcastChan <- connect.BroadcastModel{Model: model, Conn: conn, Self: yourself}
+	go connect.Broadcast(connect.BroadcastModel{Model: model, Conn: conn, Self: yourself})
 }

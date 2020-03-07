@@ -1,6 +1,9 @@
 package stream
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"github.com/yanlong-li/HelloWorld-GO/io/network/stream"
+)
 
 // 读取bool值
 func (ps *SocketPacketStream) ReadBool() bool {
@@ -13,7 +16,8 @@ func (ps *SocketPacketStream) ReadBool() bool {
 // 读取 Uint8 as byte
 func (ps *SocketPacketStream) ReadUInt8() (data uint8) {
 	if ps.checkLen(1) {
-		data = uint8(ps.Data[ps.Index])
+		_data := ps.GetData()
+		data = _data[ps.Index]
 		ps.Index++
 		return
 	}
@@ -23,7 +27,8 @@ func (ps *SocketPacketStream) ReadUInt8() (data uint8) {
 // 读取 Uint16
 func (ps *SocketPacketStream) ReadUInt16() (data uint16) {
 	if ps.checkLen(2) {
-		data = binary.LittleEndian.Uint16(ps.Data[ps.Index : ps.Index+2])
+		_data := ps.GetData()
+		data = binary.LittleEndian.Uint16(_data[ps.Index : ps.Index+2])
 		ps.Index += 2
 		return
 	}
@@ -33,7 +38,8 @@ func (ps *SocketPacketStream) ReadUInt16() (data uint16) {
 // 读取 Uint32
 func (ps *SocketPacketStream) ReadUInt32() (data uint32) {
 	if ps.checkLen(4) {
-		data = binary.LittleEndian.Uint32(ps.Data[ps.Index : ps.Index+4])
+		_data := ps.GetData()
+		data = binary.LittleEndian.Uint32(_data[ps.Index : ps.Index+4])
 		ps.Index += 4
 		return
 	}
@@ -43,7 +49,8 @@ func (ps *SocketPacketStream) ReadUInt32() (data uint32) {
 // 读取 Uint64
 func (ps *SocketPacketStream) ReadUInt64() (data uint64) {
 	if ps.checkLen(8) {
-		data = binary.LittleEndian.Uint64(ps.Data[ps.Index : ps.Index+8])
+		_data := ps.GetData()
+		data = binary.LittleEndian.Uint64(_data[ps.Index : ps.Index+8])
 		ps.Index += 8
 		return
 	}
@@ -53,7 +60,8 @@ func (ps *SocketPacketStream) ReadUInt64() (data uint64) {
 // 读取 int8 as byte
 func (ps *SocketPacketStream) ReadInt8() (data int8) {
 	if ps.checkLen(1) {
-		data = int8(ps.Data[ps.Index])
+		_data := ps.GetData()
+		data = int8(_data[ps.Index])
 		ps.Index++
 		return
 	}
@@ -63,7 +71,8 @@ func (ps *SocketPacketStream) ReadInt8() (data int8) {
 // 读取 int16
 func (ps *SocketPacketStream) ReadInt16() (data int16) {
 	if ps.checkLen(2) {
-		data = int16(binary.LittleEndian.Uint16(ps.Data[ps.Index : ps.Index+2]))
+		_data := ps.GetData()
+		data = int16(binary.LittleEndian.Uint16(_data[ps.Index : ps.Index+2]))
 		ps.Index += 2
 		return
 	}
@@ -73,7 +82,8 @@ func (ps *SocketPacketStream) ReadInt16() (data int16) {
 // 读取 int32
 func (ps *SocketPacketStream) ReadInt32() (data int32) {
 	if ps.checkLen(4) {
-		data = int32(binary.LittleEndian.Uint32(ps.Data[ps.Index : ps.Index+4]))
+		_data := ps.GetData()
+		data = int32(binary.LittleEndian.Uint32(_data[ps.Index : ps.Index+4]))
 		ps.Index += 4
 		return
 	}
@@ -83,7 +93,8 @@ func (ps *SocketPacketStream) ReadInt32() (data int32) {
 // 读取 int64
 func (ps *SocketPacketStream) ReadInt64() (data int64) {
 	if ps.checkLen(8) {
-		data = int64(binary.LittleEndian.Uint64(ps.Data[ps.Index : ps.Index+8]))
+		_data := ps.GetData()
+		data = int64(binary.LittleEndian.Uint64(_data[ps.Index : ps.Index+8]))
 		ps.Index += 8
 		return
 	}
@@ -95,7 +106,8 @@ func (ps *SocketPacketStream) ReadInt64() (data int64) {
 // 读取 Float32
 func (ps *SocketPacketStream) ReadFloat32() (data float32) {
 	if ps.checkLen(4) {
-		data = ByteToFloat32(ps.Data[ps.Index : ps.Index+4])
+		_data := ps.GetData()
+		data = stream.BytesToFloat32(_data[ps.Index : ps.Index+4])
 		ps.Index += 4
 		return
 	}
@@ -105,7 +117,8 @@ func (ps *SocketPacketStream) ReadFloat32() (data float32) {
 // 读取 Float64
 func (ps *SocketPacketStream) ReadFloat64() (data float64) {
 	if ps.checkLen(8) {
-		data = ByteToFloat64(ps.Data[ps.Index : ps.Index+8])
+		_data := ps.GetData()
+		data = stream.BytesToFloat64(_data[ps.Index : ps.Index+8])
 		ps.Index += 8
 		return
 	}
@@ -116,7 +129,8 @@ func (ps *SocketPacketStream) ReadFloat64() (data float64) {
 func (ps *SocketPacketStream) ReadString() (data string) {
 	// 首先读取uint16 长度的字符串长度
 	if ps.checkLen(2) {
-		length := ps.Data[ps.Index : ps.Index+2]
+		_data := ps.GetData()
+		length := _data[ps.Index : ps.Index+2]
 		ps.Index += 2
 		data = ps.ReadStringL(binary.LittleEndian.Uint16(length))
 		return
@@ -127,7 +141,8 @@ func (ps *SocketPacketStream) ReadString() (data string) {
 // 读取固定长度字符串
 func (ps *SocketPacketStream) ReadStringL(length uint16) (data string) {
 	if ps.checkLen(length) {
-		data = string(ps.Data[ps.Index : ps.Index+length])
+		_data := ps.GetData()
+		data = string(_data[ps.Index : ps.Index+length])
 		ps.Index += length
 		return
 	}
@@ -136,15 +151,10 @@ func (ps *SocketPacketStream) ReadStringL(length uint16) (data string) {
 
 // 检查数据长度是否足够
 func (ps *SocketPacketStream) checkLen(length uint16) bool {
-	if uint16(len(ps.Data)) >= ps.Index+length {
+	if uint16(len(ps.GetData())) >= ps.Index+length {
 		return true
 	}
 	return false
-}
-
-func (ps *SocketPacketStream) GetLen() uint16 {
-	ps.Len = uint16(len(ps.Data))
-	return ps.Len
 }
 
 // Bool

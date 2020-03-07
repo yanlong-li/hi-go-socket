@@ -2,22 +2,22 @@ package stream
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/yanlong-li/HelloWorld-GO/io/logger"
 	"log"
 	"reflect"
 )
 
 // 从字节流中反射出对应的结构体并注入到指定方法中
-func Unmarshal(f interface{}, data []byte) []reflect.Value {
+func (wsps *WebSocketPacketStream) Unmarshal(f interface{}) []reflect.Value {
 	t := reflect.TypeOf(f)
 	//构造一个存放函数实参 Value 值的数纽
 	var in []reflect.Value
 
 	var p interface{}
-	err := json.Unmarshal(data, &p)
+	err := json.Unmarshal(wsps.GetData(), &p)
 
 	if err != nil {
-		fmt.Println("无法解析的数据", string(data))
+		logger.Debug("无法解析的数据", 0, string(wsps.GetData()))
 	}
 
 	//keys:=p.keys
@@ -36,14 +36,14 @@ func Unmarshal(f interface{}, data []byte) []reflect.Value {
 				log.Println("未知字段：", keys[k].String())
 				break
 			}
-			UnmarshalConverter(field, value.MapIndex(keys[k]).Elem())
+			wsps.UnmarshalConverter(field, value.MapIndex(keys[k]).Elem())
 		}
 		in = append(in, elem)
 	}
 	return in
 }
 
-func UnmarshalConverter(field, field2 reflect.Value) reflect.Value {
+func (wsps *WebSocketPacketStream) UnmarshalConverter(field, field2 reflect.Value) reflect.Value {
 
 	switch field.Kind() {
 	case reflect.String:
@@ -75,8 +75,8 @@ func UnmarshalConverter(field, field2 reflect.Value) reflect.Value {
 		// 读取数量
 		num := field2.Len()
 		newV := reflect.MakeSlice(field.Type(), 1, int(num))
-		for i := 0; i < int(num); i++ {
-			newV = reflect.Append(newV, UnmarshalConverter(field, newV.Index(0)))
+		for i := 0; i < num; i++ {
+			newV = reflect.Append(newV, wsps.UnmarshalConverter(field, newV.Index(0)))
 		}
 		field.Set(newV.Slice(1, newV.Len()))
 	default:

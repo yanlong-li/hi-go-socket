@@ -54,9 +54,10 @@ func (ps *SocketPacketStream) UnmarshalConverter(field reflect.Value) reflect.Va
 	case reflect.Slice:
 		// 读取数量
 		num := ps.ReadUInt16()
-		newV := reflect.MakeSlice(field.Type(), 1, int(num))
+		newV := reflect.MakeSlice(field.Type(), 1, int(num)+1)
+		newField := newV.Index(0)
 		for i := 0; i < int(num); i++ {
-			newV = reflect.Append(newV, ps.UnmarshalConverter(newV.Index(0)))
+			newV = reflect.Append(newV, ps.UnmarshalConverter(newField))
 		}
 		field.Set(newV.Slice(1, newV.Len()))
 	case reflect.Struct:

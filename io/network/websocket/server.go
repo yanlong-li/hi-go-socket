@@ -44,7 +44,7 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 写入本地连接列表
-	connector := &connect.WebSocketConnector{Conn: conn, ID: baseConnect.GetAutoSequenceID()}
+	connector := &connect.WebSocketConnector{Conn: conn, BaseConnector: baseConnect.BaseConnector{ID: baseConnect.GetAutoSequenceID()}}
 	go baseConnect.Add(connector)
 	go connector.Connected()
 }

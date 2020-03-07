@@ -26,7 +26,7 @@ func Server(address string) {
 			break
 		} else {
 			// 写入本地连接列表
-			socketConnect := &connect.SocketConnector{Conn: conn, ID: baseConnect.GetAutoSequenceID()}
+			socketConnect := &connect.SocketConnector{Conn: conn, BaseConnector: baseConnect.BaseConnector{ID: baseConnect.GetAutoSequenceID()}}
 			go baseConnect.Add(socketConnect)
 			go socketConnect.Connected()
 		}
