@@ -25,6 +25,8 @@ func (ps *SocketPacketStream) MarshalConverter(field reflect.Value) {
 		ps.WriteString(field.String())
 	case reflect.Int:
 		ps.WriteInt64(field.Int())
+	case reflect.Bool:
+		ps.WriteBool(field.Bool())
 	case reflect.Uint8:
 		ps.WriteUint8(uint8(field.Uint()))
 	case reflect.Uint16:

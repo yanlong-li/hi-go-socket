@@ -31,6 +31,8 @@ func (ps *SocketPacketStream) UnmarshalConverter(field reflect.Value) reflect.Va
 	switch field.Kind() {
 	case reflect.String:
 		field.SetString(ps.ReadString())
+	case reflect.Bool:
+		field.SetBool(ps.ReadBool())
 	case reflect.Uint8:
 		field.SetUint(uint64(ps.ReadUInt8()))
 	case reflect.Uint16:
