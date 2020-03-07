@@ -17,7 +17,7 @@ import (
 func (conn *WebSocketConnector) Connected() {
 
 	//处理首次连接动作
-	conn.connectedAction()
+	conn.ConnectedAction()
 	// 处理连接断开后的动作
 	defer conn.DisconnectAction()
 
@@ -62,7 +62,7 @@ func (conn *WebSocketConnector) HandleData(buf []byte) {
 
 			wsps.OpCode = binary.LittleEndian.Uint32(OpCode)
 			wsps.SetData(buf[OpCodeType:])
-			if !conn.recvAction(&wsps) {
+			if !conn.RecvAction(&wsps) {
 				return
 			}
 
@@ -81,7 +81,7 @@ func (conn *WebSocketConnector) HandleData(buf []byte) {
 }
 
 // 建立连接时
-func (conn *WebSocketConnector) connectedAction() {
+func (conn *WebSocketConnector) ConnectedAction() {
 	go connect.Add(conn)
 
 	f := route.Handle(packet.CONNECTION)
@@ -114,7 +114,7 @@ func (conn *WebSocketConnector) DisconnectAction() {
 }
 
 // 收到数据包时
-func (conn *WebSocketConnector) recvAction(bs baseStream.Interface) bool {
+func (conn *WebSocketConnector) RecvAction(bs baseStream.Interface) bool {
 	f := route.Handle(packet.BEFORE_RECVING)
 	if f != nil {
 		var in []reflect.Value

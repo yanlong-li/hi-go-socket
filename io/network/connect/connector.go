@@ -1,16 +1,22 @@
 package connect
 
-//连接器接口
+import "github.com/yanlong-li/HelloWorld-GO/io/network/stream"
+
+// 公开连接器要实现的接口
 type Connector interface {
-	//Connected()
 	Send(interface{}) error
-	//connectedAction()
-	//disconnectAction()
 	GetId() uint64
 	Broadcast(interface{}, bool)
 	HandleData([]byte)
-	//recvAction(stream.BaseStream) bool
 	Disconnect()
+}
+
+// 不公开连接器要实现的接口
+type PrivateConnector interface {
+	RecvAction(stream.Interface) bool
+	Connected()
+	ConnectedAction()
+	DisconnectAction()
 }
 
 const (

@@ -15,9 +15,9 @@ import (
 func (conn *SocketConnector) Connected() {
 
 	//处理首次连接动作
-	conn.connectedAction()
+	conn.ConnectedAction()
 	// 处理连接断开后的动作
-	defer conn.disconnectAction()
+	defer conn.DisconnectAction()
 
 	defer func() { // 必须要先声明defer，否则不能捕获到panic异常
 		if err := recover(); err != nil {
@@ -64,7 +64,7 @@ func (conn *SocketConnector) HandleData(data []byte) {
 	}
 	ps.SetData(data[6 : ps.GetLen()+2])
 
-	if !conn.recvAction(&ps) {
+	if !conn.RecvAction(&ps) {
 		return
 	}
 
@@ -79,7 +79,7 @@ func (conn *SocketConnector) HandleData(data []byte) {
 }
 
 // 建立连接时
-func (conn *SocketConnector) connectedAction() {
+func (conn *SocketConnector) ConnectedAction() {
 	go connect.Add(conn)
 
 	f := route.Handle(packet.CONNECTION)
@@ -93,7 +93,7 @@ func (conn *SocketConnector) connectedAction() {
 }
 
 // 准备断开连接
-func (conn *SocketConnector) disconnectAction() {
+func (conn *SocketConnector) DisconnectAction() {
 
 	f := route.Handle(packet.DISCONNECTION)
 	if f != nil {
@@ -111,7 +111,7 @@ func (conn *SocketConnector) disconnectAction() {
 }
 
 // 收到数据包时
-func (conn *SocketConnector) recvAction(bs baseStream.Interface) bool {
+func (conn *SocketConnector) RecvAction(bs baseStream.Interface) bool {
 	f := route.Handle(packet.BEFORE_RECVING)
 	if f != nil {
 		var in []reflect.Value
