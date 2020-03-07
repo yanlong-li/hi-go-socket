@@ -2,6 +2,8 @@ package logger
 
 import (
 	"fmt"
+	syslog "log"
+	"time"
 )
 
 //日志结构体
@@ -11,6 +13,8 @@ type Log struct {
 	level uint8
 	data  []interface{}
 }
+
+var showLogLevel = ALL
 
 const (
 	ALL uint8 = iota
@@ -68,7 +72,16 @@ func Fatal(msg string, code uint, data ...interface{}) {
 
 func (log *Log) handel() {
 
-	fmt.Printf("[%s][%d] %s \n", GetLabel(log.level), log.code, log.msg)
+	if log.level < showLogLevel {
+		return
+	}
+
+	fmt.Printf("%s [%s][%d] %s \n", time.Now().Format("2006/01/02 15:04:05"), GetLabel(log.level), log.code, log.msg)
+
+	if log.level >= FATAL {
+		syslog.Fatal(log.data)
+	}
+
 	if len(log.data) > 0 {
 		fmt.Println(log.data)
 	}
@@ -93,4 +106,11 @@ func GetLabel(levelType uint8) string {
 		level = "FATAL"
 	}
 	return level
+}
+
+func SetLevel(l uint8) {
+	showLogLevel = l
+}
+func GetLevel() uint8 {
+	return showLogLevel
 }

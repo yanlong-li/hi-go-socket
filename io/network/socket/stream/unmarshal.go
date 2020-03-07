@@ -1,7 +1,7 @@
 package stream
 
 import (
-	"log"
+	"github.com/yanlong-li/HelloWorld-GO/io/logger"
 	"reflect"
 )
 
@@ -68,7 +68,7 @@ func (ps *SocketPacketStream) UnmarshalConverter(field reflect.Value) reflect.Va
 			ps.UnmarshalConverter(field2)
 		}
 	default:
-		log.Fatal("未知类型", field.Kind())
+		logger.Fatal("未知类型", 0, field.Kind())
 	}
 	return field
 

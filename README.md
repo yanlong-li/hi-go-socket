@@ -10,14 +10,16 @@
 
 如果你有好的意见或建议请通过 `issues` 提出，如果你想加入这个项目可以直接 `Fork` 并将改动 `new pull request`
 
+### 入门教程
+   [基础教程](./doc/README.md)
    
-### 项目开发资料
+### 基础通讯架构
     https://github.com/Yanlong-LI/HelloWorld-GO
 
-#### 客户端源码地址：
+#### 客户端实现：
     https://github.com/Yanlong-LI/HelloWorldClient
 
-#### 服务端源码地址：
+#### 服务端实现：
     https://github.com/Yanlong-LI/HelloWorldServer
     
 ## 开源

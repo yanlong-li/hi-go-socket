@@ -1,8 +1,8 @@
 package stream
 
 import (
+	"github.com/yanlong-li/HelloWorld-GO/io/logger"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
-	"log"
 	"reflect"
 )
 
@@ -59,6 +59,6 @@ func (ps *SocketPacketStream) MarshalConverter(field reflect.Value) {
 			ps.MarshalConverter(field)
 		}
 	default:
-		log.Fatal("不支持写入的类型", field.Kind())
+		logger.Fatal("不支持写入的类型", 0, field.Kind())
 	}
 }

@@ -2,8 +2,8 @@ package websocket
 
 import (
 	"flag"
-	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/yanlong-li/HelloWorld-GO/io/logger"
 	baseConnect "github.com/yanlong-li/HelloWorld-GO/io/network/connect"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/websocket/connect"
 	"log"
@@ -25,7 +25,7 @@ func Server(address string) {
 
 	flag.Parse()
 	log.SetFlags(0)
-	fmt.Println("WS服务开启成功", address)
+	logger.Debug("WS服务开启成功", 0, address)
 	mux := http.NewServeMux()
 	server = &http.Server{
 		Addr:         *addr,
@@ -33,7 +33,7 @@ func Server(address string) {
 		Handler:      mux,
 	}
 	mux.HandleFunc("/", Connect)
-	log.Fatal(server.ListenAndServe())
+	logger.Fatal("WS服务遇到错误", 0, server.ListenAndServe())
 }
 
 func Connect(w http.ResponseWriter, r *http.Request) {

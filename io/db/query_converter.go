@@ -1,7 +1,7 @@
 package db
 
 import (
-	"log"
+	"github.com/yanlong-li/HelloWorld-GO/io/logger"
 	"reflect"
 )
 
@@ -46,7 +46,7 @@ func refs(model interface{}) []interface{} {
 			var ref float64
 			refs[i] = &ref
 		default:
-			log.Fatal("未知类型", field.Kind())
+			logger.Fatal("未知类型", 0, field.Kind())
 		}
 	}
 	return refs
@@ -79,7 +79,7 @@ func unmarshalConverter(field reflect.Value, ref interface{}) reflect.Value {
 	case reflect.Float64:
 		field.SetFloat(field2.(float64))
 	default:
-		log.Fatal("未知类型", field.Kind())
+		logger.Fatal("未知类型", 0, field.Kind())
 	}
 	return field
 

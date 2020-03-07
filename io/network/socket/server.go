@@ -1,7 +1,7 @@
 package socket
 
 import (
-	"fmt"
+	"github.com/yanlong-li/HelloWorld-GO/io/logger"
 	baseConnect "github.com/yanlong-li/HelloWorld-GO/io/network/connect"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/socket/connect"
 	"log"
@@ -14,9 +14,9 @@ func Server(address string) {
 
 	service, err := net.Listen(Tcp, address)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("SOCKET服务开启失败", 0, err)
 	}
-	fmt.Println("SOCKET服务开启成功", address)
+	logger.Debug("SOCKET服务开启成功", 0, address)
 	defer service.Close()
 
 	for {

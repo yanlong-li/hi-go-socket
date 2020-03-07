@@ -3,7 +3,6 @@ package connect
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
 	"github.com/yanlong-li/HelloWorld-GO/io/logger"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
@@ -23,12 +22,12 @@ func (conn *WebSocketConnector) Connected() {
 	defer conn.DisconnectAction()
 
 	defer func() { // 必须要先声明defer，否则不能捕获到panic异常
-		fmt.Println("一个连接发生异常")
+		logger.Debug("", 0)
 		if err := recover(); err != nil {
-			fmt.Println(err) // 这里的err其实就是panic传入的内容
+			logger.Debug("一个连接发生异常", 0, err) // 这里的err其实就是panic传入的内容
 		}
 		_ = conn.Conn.Close()
-		fmt.Println("断开连接")
+		logger.Debug("断开连接", 0)
 	}()
 	for {
 		// 读取消息
@@ -145,7 +144,7 @@ func (conn *WebSocketConnector) Send(PacketModel interface{}) {
 
 	err := conn.Conn.WriteMessage(2, data)
 	if err != nil {
-		fmt.Println("发送数据失败", err)
+		logger.Debug("发送数据失败", 0, err)
 	}
 }
 
