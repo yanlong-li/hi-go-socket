@@ -15,17 +15,17 @@ import (
 func (conn *SocketConnector) Connected() {
 
 	//处理首次连接动作
-	conn.ConnectedAction()
+	conn.connectedAction()
 	// 处理连接断开后的动作
-	defer conn.DisconnectAction()
+	defer conn.disconnectAction()
 
-	//defer func() { // 必须要先声明defer，否则不能捕获到panic异常
-	//	if err := recover(); err != nil {
-	//		logger.Debug("一个连接发生异常",0err) // 这里的err其实就是panic传入的内容
-	//	}
-	//	_ = conn.Conn.Close()
-	//	logger.Debug("断开连接",0)
-	//}()
+	defer func() { // 必须要先声明defer，否则不能捕获到panic异常
+		if err := recover(); err != nil {
+			logger.Debug("一个连接发生异常", 0, err) // 这里的err其实就是panic传入的内容
+		}
+		conn.Disconnect()
+
+	}()
 
 	for {
 		var buf = make([]byte, 8192)
@@ -37,6 +37,11 @@ func (conn *SocketConnector) Connected() {
 		conn.HandleData(buf)
 
 	}
+}
+
+func (conn *SocketConnector) Disconnect() {
+	_ = conn.Conn.Close()
+	logger.Debug("断开连接", 0)
 }
 
 // 处理数据包
@@ -59,7 +64,7 @@ func (conn *SocketConnector) HandleData(data []byte) {
 	}
 	ps.SetData(data[6 : ps.GetLen()+2])
 
-	if !conn.RecvAction(ps.BaseStream) {
+	if !conn.recvAction(&ps) {
 		return
 	}
 
@@ -74,7 +79,8 @@ func (conn *SocketConnector) HandleData(data []byte) {
 }
 
 // 建立连接时
-func (conn *SocketConnector) ConnectedAction() {
+func (conn *SocketConnector) connectedAction() {
+	go connect.Add(conn)
 
 	f := route.Handle(packet.CONNECTION)
 	if f != nil {
@@ -87,26 +93,25 @@ func (conn *SocketConnector) ConnectedAction() {
 }
 
 // 准备断开连接
-func (conn *SocketConnector) DisconnectAction() {
-
-	_ = conn.Conn.Close()
-
-	go connect.Del(conn.ID)
-	go connect.AddIdleSequenceId(conn.ID)
+func (conn *SocketConnector) disconnectAction() {
 
 	f := route.Handle(packet.DISCONNECTION)
 	if f != nil {
 		//构造一个存放函数实参 Value 值的数纽
 		var in []reflect.Value
-		in = append(in, reflect.ValueOf(conn.ID))
+		in = append(in, reflect.ValueOf(conn))
 		reflect.ValueOf(f).Call(in)
 	} else {
 		logger.Debug("没有设置断开连接动作:", 1)
 	}
+
+	_ = conn.Conn.Close()
+
+	go connect.Del(conn.ID)
 }
 
 // 收到数据包时
-func (conn *SocketConnector) RecvAction(bs baseStream.BaseStream) bool {
+func (conn *SocketConnector) recvAction(bs baseStream.Interface) bool {
 	f := route.Handle(packet.BEFORE_RECVING)
 	if f != nil {
 		var in []reflect.Value
@@ -123,7 +128,7 @@ func (conn *SocketConnector) RecvAction(bs baseStream.BaseStream) bool {
 }
 
 // 发送数据包
-func (conn *SocketConnector) Send(model interface{}) {
+func (conn *SocketConnector) Send(model interface{}) error {
 
 	ps := &stream.SocketPacketStream{}
 	ps.Marshal(model)
@@ -146,6 +151,7 @@ func (conn *SocketConnector) Send(model interface{}) {
 	if err != nil {
 		logger.Debug("发送数据失败", 0)
 	}
+	return err
 }
 
 //广播数据包

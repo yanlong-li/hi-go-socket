@@ -17,18 +17,17 @@ import (
 func (conn *WebSocketConnector) Connected() {
 
 	//处理首次连接动作
-	conn.ConnectedAction()
+	conn.connectedAction()
 	// 处理连接断开后的动作
 	defer conn.DisconnectAction()
 
 	defer func() { // 必须要先声明defer，否则不能捕获到panic异常
-		logger.Debug("", 0)
 		if err := recover(); err != nil {
 			logger.Debug("一个连接发生异常", 0, err) // 这里的err其实就是panic传入的内容
 		}
-		_ = conn.Conn.Close()
-		logger.Debug("断开连接", 0)
+		conn.Disconnect()
 	}()
+
 	for {
 		// 读取消息
 		_, buf, err := conn.Conn.ReadMessage()
@@ -41,6 +40,11 @@ func (conn *WebSocketConnector) Connected() {
 		log.Printf("recv: %s", buf)
 		conn.HandleData(buf)
 	}
+}
+
+func (conn *WebSocketConnector) Disconnect() {
+	_ = conn.Conn.Close()
+	logger.Debug("断开连接", 0)
 }
 
 // 处理数据包
@@ -58,7 +62,7 @@ func (conn *WebSocketConnector) HandleData(buf []byte) {
 
 			wsps.OpCode = binary.LittleEndian.Uint32(OpCode)
 			wsps.SetData(buf[OpCodeType:])
-			if !conn.RecvAction(wsps.BaseStream) {
+			if !conn.recvAction(&wsps) {
 				return
 			}
 
@@ -77,7 +81,8 @@ func (conn *WebSocketConnector) HandleData(buf []byte) {
 }
 
 // 建立连接时
-func (conn *WebSocketConnector) ConnectedAction() {
+func (conn *WebSocketConnector) connectedAction() {
+	go connect.Add(conn)
 
 	f := route.Handle(packet.CONNECTION)
 	if f != nil {
@@ -92,24 +97,24 @@ func (conn *WebSocketConnector) ConnectedAction() {
 // 准备断开连接
 func (conn *WebSocketConnector) DisconnectAction() {
 
-	_ = conn.Conn.Close()
-
-	go connect.Del(conn.ID)
-	go connect.AddIdleSequenceId(conn.ID)
-
 	f := route.Handle(packet.DISCONNECTION)
 	if f != nil {
 		//构造一个存放函数实参 Value 值的数纽
 		var in []reflect.Value
-		in = append(in, reflect.ValueOf(conn.ID))
+		in = append(in, reflect.ValueOf(conn))
 		reflect.ValueOf(f).Call(in)
 	} else {
 		logger.Debug("没有设置断开连接动作:", 1)
 	}
+
+	_ = conn.Conn.Close()
+
+	go connect.Del(conn.ID)
+
 }
 
 // 收到数据包时
-func (conn *WebSocketConnector) RecvAction(bs baseStream.BaseStream) bool {
+func (conn *WebSocketConnector) recvAction(bs baseStream.Interface) bool {
 	f := route.Handle(packet.BEFORE_RECVING)
 	if f != nil {
 		var in []reflect.Value
@@ -126,7 +131,7 @@ func (conn *WebSocketConnector) RecvAction(bs baseStream.BaseStream) bool {
 }
 
 // 发送数据包
-func (conn *WebSocketConnector) Send(PacketModel interface{}) {
+func (conn *WebSocketConnector) Send(PacketModel interface{}) error {
 	ps := stream.WebSocketPacketStream{}
 	ps.Marshal(PacketModel)
 	data := ps.ToData()
@@ -146,6 +151,7 @@ func (conn *WebSocketConnector) Send(PacketModel interface{}) {
 	if err != nil {
 		logger.Debug("发送数据失败", 0, err)
 	}
+	return err
 }
 
 //广播数据包
