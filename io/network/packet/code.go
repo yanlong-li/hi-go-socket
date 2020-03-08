@@ -4,11 +4,13 @@ package packet
 // 0 ~ 5999
 const (
 	// 链接成功
-	CONNECTION uint32 = iota
+	Connection uint32 = iota
 	//断开链接,包括已断开和准备断开
-	DISCONNECTION
+	Disconnection
 	// 收到数据包处理之前
-	BEFORE_RECVING
+	BeforeRecv
 	// 发送数据包之前
-	BEFORE_SENDING
+	BeforeSending
+
+	MaxCode = 5999
 )

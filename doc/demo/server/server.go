@@ -26,7 +26,7 @@ type connected struct {
 func main() {
 
 	//注册数据包模型
-	packet.Register(packet.CONNECTION, connected{})
+	packet.Register(packet.Connection, connected{})
 	//注册系统路由
 	route.Register(connected{}, func(connector connect.Connector) {
 		fmt.Println("一个新的客户端已连接")

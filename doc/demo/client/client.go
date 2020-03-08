@@ -28,7 +28,7 @@ func main() {
 	packet.Register(6000, user{})
 	packet.Register(6001, message{})
 
-	packet.Register(packet.CONNECTION, connected{})
+	packet.Register(packet.Connection, connected{})
 
 	//注册动作 匿名注册
 	route.Register(connected{}, func(connector connect.Connector) {

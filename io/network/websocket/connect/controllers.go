@@ -61,6 +61,11 @@ func (conn *WebSocketConnector) HandleData(buf []byte) {
 			wsps := stream.WebSocketPacketStream{}
 
 			wsps.OpCode = binary.LittleEndian.Uint32(OpCode)
+			if wsps.OpCode < packet.MaxCode {
+				logger.Debug("OP码范围不正确", 0)
+				return
+			}
+
 			wsps.SetData(buf[OpCodeType:])
 			if !conn.RecvAction(&wsps) {
 				return
@@ -84,7 +89,7 @@ func (conn *WebSocketConnector) HandleData(buf []byte) {
 func (conn *WebSocketConnector) ConnectedAction() {
 	go connect.Add(conn)
 
-	f := route.Handle(packet.CONNECTION)
+	f := route.Handle(packet.Connection)
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(conn))
@@ -97,7 +102,7 @@ func (conn *WebSocketConnector) ConnectedAction() {
 // 准备断开连接
 func (conn *WebSocketConnector) DisconnectAction() {
 
-	f := route.Handle(packet.DISCONNECTION)
+	f := route.Handle(packet.Disconnection)
 	if f != nil {
 		//构造一个存放函数实参 Value 值的数纽
 		var in []reflect.Value
@@ -115,7 +120,7 @@ func (conn *WebSocketConnector) DisconnectAction() {
 
 // 收到数据包时
 func (conn *WebSocketConnector) RecvAction(bs baseStream.Interface) bool {
-	f := route.Handle(packet.BEFORE_RECVING)
+	f := route.Handle(packet.BeforeRecv)
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(bs))
@@ -137,7 +142,7 @@ func (conn *WebSocketConnector) Send(PacketModel interface{}) error {
 	data := ps.ToData()
 
 	// 发送之前进行数据处理：加密、压缩
-	f := route.Handle(packet.BEFORE_SENDING)
+	f := route.Handle(packet.BeforeSending)
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(ps))

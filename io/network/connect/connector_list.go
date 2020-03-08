@@ -26,7 +26,7 @@ func init() {
 					if BM.Self == false && id == BM.Conn.GetId() {
 						continue
 					}
-					v.Send(BM.Model)
+					go v.Send(BM.Model)
 				}
 			}
 		}
