@@ -147,6 +147,7 @@ func (conn *SocketConnector) Send(model interface{}) error {
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(ps))
+		in = append(in, reflect.ValueOf(conn))
 
 		result := reflect.ValueOf(f).Call(in)
 		if len(result) >= 1 {

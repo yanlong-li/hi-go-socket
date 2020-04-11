@@ -146,6 +146,8 @@ func (conn *WebSocketConnector) Send(PacketModel interface{}) error {
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(ps))
+		in = append(in, reflect.ValueOf(conn))
+
 		result := reflect.ValueOf(f).Call(in)
 		if len(result) >= 1 {
 			data = result[0].Bytes()
