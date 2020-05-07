@@ -2,5 +2,5 @@ package socket
 
 const (
 	Tcp = "tcp"
-	Udp = "udp" // 暂时不用
+	//Udp = "udp" // 暂时不用
 )

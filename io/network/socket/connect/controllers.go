@@ -2,6 +2,7 @@ package connect
 
 import (
 	"encoding/binary"
+	"fmt"
 	"github.com/yanlong-li/HelloWorld-GO/io/logger"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
@@ -28,15 +29,50 @@ func (conn *SocketConnector) Connected() {
 	}()
 
 	for {
-		var buf = make([]byte, 8192)
-		_, err := conn.Conn.Read(buf)
+		lenBuf := make([]byte, packet.BufLenLen)
+		// 读取包体长度
+		_, err := conn.Conn.Read(lenBuf)
 		if err != nil {
-			logger.Debug("连接断开", 0)
+			logger.Debug("数据包长度读取失败", 0)
+			break
+		}
+		bufLen := binary.LittleEndian.Uint16(lenBuf)
+		// 容不下 OpCode 要你何用
+		if bufLen <= packet.OpCodeLen {
+			logger.Debug("数据长度标识不正确", 0)
+			return
+		}
+		buf, err := conn.readLenBuf(bufLen)
+		if err != nil {
+			logger.Debug("数据包体读取失败", 0)
 			break
 		}
 		conn.HandleData(buf)
-
 	}
+}
+
+// 读取指定长度的数据 解决粘包和拆包问题
+// 极端情况会导致所有的后续包无法正常读取
+func (conn *SocketConnector) readLenBuf(bufLen uint16) ([]byte, error) {
+	//读取真正的数据包
+	buf := make([]byte, bufLen)
+	// 实际读取长度 redBufLen
+	readBufLen, err := conn.Conn.Read(buf)
+	if err != nil {
+		return buf, err
+	}
+
+	if uint16(readBufLen) < bufLen {
+		newBuf, err := conn.readLenBuf(bufLen - uint16(readBufLen))
+		// 将newBuf和buf进行合并
+		if err != nil {
+			return buf, nil
+		}
+		buf = append(buf[:readBufLen], newBuf...)
+	}
+
+	return buf, nil
+
 }
 
 func (conn *SocketConnector) Disconnect() {
@@ -44,32 +80,23 @@ func (conn *SocketConnector) Disconnect() {
 	logger.Debug("断开连接", 0)
 }
 
-// 处理数据包
+// 处理单个数据包 包体不含长度标识
 func (conn *SocketConnector) HandleData(data []byte) {
-
-	//2byte的uint16长度+4byte的uint64OpCode码
-	if len(data) < 6 {
-		logger.Debug("数据不正确", 0)
-		return
-	}
 
 	// 每次动作不一致都注册一个单独的动作来处理
 	ps := stream.SocketPacketStream{}
-	ps.SetLen(binary.LittleEndian.Uint16(data[0:2]))
-	if ps.GetLen() < 4 {
+	ps.SetLen(uint16(len(data)))
+	if ps.GetLen() < packet.OpCodeLen {
 		logger.Debug("数据长度标识不正确", 0)
 		return
 	}
-	ps.SetOpCode(binary.LittleEndian.Uint32(data[2:6]))
-	if ps.OpCode < packet.MaxCode {
+	ps.SetOpCode(binary.LittleEndian.Uint32(data[:packet.OpCodeLen]))
+	if ps.OpCode < packet.ReservedCode {
 		logger.Debug("OP码范围不正确", 0)
 		return
 	}
-	if uint16(len(data)) < ps.GetLen()+2 {
-		logger.Debug("数据流不完整", 0)
-		return
-	}
-	ps.SetData(data[6 : ps.GetLen()+2])
+
+	ps.SetData(data[packet.OpCodeLen:ps.GetLen()])
 
 	if !conn.RecvAction(&ps) {
 		return
@@ -81,7 +108,7 @@ func (conn *SocketConnector) HandleData(data []byte) {
 		in = append(in, reflect.ValueOf(conn))
 		go reflect.ValueOf(f).Call(in)
 	} else {
-		logger.Debug("未注册的包", 0, ps.OpCode)
+		logger.Debug(fmt.Sprintf("未注册的包:%d", ps.OpCode), 0, ps.OpCode)
 	}
 }
 

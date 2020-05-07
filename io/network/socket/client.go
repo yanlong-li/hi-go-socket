@@ -10,7 +10,7 @@ import (
 // 需要参数 监听地址:监听端口
 func Client(address string) {
 	conn, err := net.Dial(Tcp, address)
-
+	defer CloseClient(conn)
 	if err != nil {
 		logger.Fatal("连接服务器失败", 0, err)
 	}
@@ -18,4 +18,8 @@ func Client(address string) {
 	// 写入本地连接列表
 	connector := connect.SocketConnector{Conn: conn}
 	connector.Connected()
+}
+
+func CloseClient(conn net.Conn) {
+	_ = conn.Close()
 }

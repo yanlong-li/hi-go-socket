@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
 	"reflect"
 )
 
@@ -45,7 +46,7 @@ func (bs *BaseStream) SetLen(Len uint16) {
 func (bs *BaseStream) ToData() []byte {
 	//创建固定长度的数组节省内存
 	var data []byte
-	data = append(data, Uint16ToBytes(bs.GetLen()+4)...)
+	data = append(data, Uint16ToBytes(packet.OpCodeLen+bs.GetLen())...)
 	data = append(data, Uint32ToBytes(bs.OpCode)...)
 	data = append(data, bs.data...)
 	return data

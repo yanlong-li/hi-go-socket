@@ -20,6 +20,6 @@ type PrivateConnector interface {
 }
 
 const (
-	SOCKET = iota
-	WEBSOCKET
+//SOCKET = iota
+//WEBSOCKET
 )

@@ -8,16 +8,16 @@ import (
 )
 
 // 从字节流中反射出对应的结构体并注入到指定方法中
-func (wsps *WebSocketPacketStream) Unmarshal(f interface{}) []reflect.Value {
+func (websocketPacketStream *WebSocketPacketStream) Unmarshal(f interface{}) []reflect.Value {
 	t := reflect.TypeOf(f)
 	//构造一个存放函数实参 Value 值的数纽
 	var in []reflect.Value
 
 	var p interface{}
-	err := json.Unmarshal(wsps.GetData(), &p)
+	err := json.Unmarshal(websocketPacketStream.GetData(), &p)
 
 	if err != nil {
-		logger.Debug("无法解析的数据", 0, string(wsps.GetData()))
+		logger.Debug("无法解析的数据", 0, string(websocketPacketStream.GetData()))
 	}
 
 	//keys:=p.keys
@@ -36,14 +36,14 @@ func (wsps *WebSocketPacketStream) Unmarshal(f interface{}) []reflect.Value {
 				log.Println("未知字段：", keys[k].String())
 				break
 			}
-			wsps.UnmarshalConverter(field, value.MapIndex(keys[k]).Elem())
+			websocketPacketStream.UnmarshalConverter(field, value.MapIndex(keys[k]).Elem())
 		}
 		in = append(in, elem)
 	}
 	return in
 }
 
-func (wsps *WebSocketPacketStream) UnmarshalConverter(field, field2 reflect.Value) reflect.Value {
+func (websocketPacketStream *WebSocketPacketStream) UnmarshalConverter(field, field2 reflect.Value) reflect.Value {
 
 	switch field.Kind() {
 	case reflect.String:
@@ -74,9 +74,9 @@ func (wsps *WebSocketPacketStream) UnmarshalConverter(field, field2 reflect.Valu
 		field2.Len()
 		// 读取数量
 		num := field2.Len()
-		newV := reflect.MakeSlice(field.Type(), 1, int(num))
+		newV := reflect.MakeSlice(field.Type(), 1, num)
 		for i := 0; i < num; i++ {
-			newV = reflect.Append(newV, wsps.UnmarshalConverter(field, newV.Index(0)))
+			newV = reflect.Append(newV, websocketPacketStream.UnmarshalConverter(field, newV.Index(0)))
 		}
 		field.Set(newV.Slice(1, newV.Len()))
 	default:

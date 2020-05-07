@@ -6,11 +6,11 @@ import (
 )
 
 //将包结构体反射写入字节流中
-func (wsps *WebSocketPacketStream) Marshal(PacketModel interface{}) {
-	wsps.SetData([]byte{})
+func (websocketPacketStream *WebSocketPacketStream) Marshal(PacketModel interface{}) {
+	websocketPacketStream.SetData([]byte{})
 
 	data, _ := json.Marshal(PacketModel)
-	wsps.SetData(data)
-	wsps.SetOpCode(packet.OpCode(PacketModel))
-	wsps.SetLen(uint16(len(data)))
+	websocketPacketStream.SetData(data)
+	websocketPacketStream.SetOpCode(packet.OpCode(PacketModel))
+	websocketPacketStream.SetLen(uint16(len(data)))
 }

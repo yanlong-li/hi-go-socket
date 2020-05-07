@@ -11,6 +11,14 @@ const (
 	BeforeRecv
 	// 发送数据包之前
 	BeforeSending
+	//保留范围 0-ReservedCode  自定义 Code 不能小于 ReservedCode
+	ReservedCode = 5999
+)
 
-	MaxCode = 5999
+// 基础数据定义
+const (
+	// 标识码占位长度 4 字节 uint32
+	OpCodeLen = 4
+	// 数据包长度标识符占位 2 字节 uint16
+	BufLenLen = 2
 )

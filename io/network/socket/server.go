@@ -17,7 +17,7 @@ func Server(address string) {
 		logger.Fatal("SOCKET服务开启失败", 0, err)
 	}
 	logger.Debug("SOCKET服务开启成功", 0, address)
-	defer service.Close()
+	defer CloseService(service)
 
 	for {
 		//time.Sleep(time.Second * 10)
@@ -32,4 +32,8 @@ func Server(address string) {
 
 	}
 
+}
+
+func CloseService(service net.Listener) {
+	_ = service.Close()
 }

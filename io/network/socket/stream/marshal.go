@@ -42,7 +42,7 @@ func (ps *SocketPacketStream) MarshalConverter(field reflect.Value) {
 	case reflect.Int32:
 		ps.WriteInt32(int32(field.Int()))
 	case reflect.Int64:
-		ps.WriteInt64(int64(field.Int()))
+		ps.WriteInt64(field.Int())
 	case reflect.Float32:
 		ps.WriteFloat32(float32(field.Float()))
 	case reflect.Float64:

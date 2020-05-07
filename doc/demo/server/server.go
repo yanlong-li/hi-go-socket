@@ -42,7 +42,7 @@ func main() {
 	route.Register(user{}, func(u user, connector connect.Connector) {
 		fmt.Println("收到客户端上传的用户资料")
 		fmt.Println(u)
-		connector.Send(message{
+		_ = connector.Send(message{
 			Msg: "已收到您的用户信息",
 		})
 	})

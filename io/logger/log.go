@@ -75,16 +75,15 @@ func (log *Log) handel() {
 	if log.level < showLogLevel {
 		return
 	}
-
-	fmt.Printf("%s [%s][%d] %s", time.Now().Format("2006/01/02 15:04:05"), GetLabel(log.level), log.code, log.msg)
+	if log.data != nil {
+		fmt.Printf("%s [%s][%d] %s %#v \n", time.Now().Format("2006/01/02 15:04:05"), GetLabel(log.level), log.code, log.msg, log.data)
+	} else {
+		fmt.Printf("%s [%s][%d] %s \n", time.Now().Format("2006/01/02 15:04:05"), GetLabel(log.level), log.code, log.msg)
+	}
 
 	if log.level >= FATAL {
-		syslog.Fatal(log.data)
+		syslog.Fatal(log.code, log.level, log.msg)
 	}
-	if log.data != nil {
-		fmt.Printf(" %#v", log.data)
-	}
-	fmt.Println()
 
 }
 

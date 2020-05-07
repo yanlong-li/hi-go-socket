@@ -50,7 +50,7 @@ func (conn *WebSocketConnector) Disconnect() {
 // 处理数据包
 func (conn *WebSocketConnector) HandleData(buf []byte) {
 	// uint16 = 4 uint32 = 8 uint64 = 16
-	var OpCodeType uint8 = 8
+	var OpCodeType uint8 = packet.OpCodeLen * 2
 	//监听动作
 	if len(buf) >= int(OpCodeType) {
 		OpCode, err := hex.DecodeString(string(buf[0:OpCodeType]))
@@ -58,26 +58,26 @@ func (conn *WebSocketConnector) HandleData(buf []byte) {
 			logger.Debug("获取动作错误", 0)
 		} else {
 
-			wsps := stream.WebSocketPacketStream{}
+			websocketPacketStream := stream.WebSocketPacketStream{}
 
-			wsps.OpCode = binary.LittleEndian.Uint32(OpCode)
-			if wsps.OpCode < packet.MaxCode {
+			websocketPacketStream.OpCode = binary.LittleEndian.Uint32(OpCode)
+			if websocketPacketStream.OpCode <= packet.ReservedCode {
 				logger.Debug("OP码范围不正确", 0)
 				return
 			}
 
-			wsps.SetData(buf[OpCodeType:])
-			if !conn.RecvAction(&wsps) {
+			websocketPacketStream.SetData(buf[OpCodeType:])
+			if !conn.RecvAction(&websocketPacketStream) {
 				return
 			}
 
-			f := route.Handle(wsps.OpCode)
+			f := route.Handle(websocketPacketStream.OpCode)
 			if f != nil {
-				in := wsps.Unmarshal(f)
+				in := websocketPacketStream.Unmarshal(f)
 				in = append(in, reflect.ValueOf(conn))
 				reflect.ValueOf(f).Call(in)
 			} else {
-				logger.Debug("未注册的包", 0, wsps.OpCode)
+				logger.Debug("未注册的包", 0, websocketPacketStream.OpCode)
 			}
 		}
 	} else {

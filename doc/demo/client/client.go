@@ -34,7 +34,7 @@ func main() {
 	route.Register(connected{}, func(connector connect.Connector) {
 		fmt.Println("已连接服务器")
 		fmt.Println("发送用户资料到服务器")
-		connector.Send(user{Id: 1, Name: "客户端1号", Age: true})
+		_ = connector.Send(user{Id: 1, Name: "客户端1号", Age: true})
 	})
 	//或 实名注册
 	route.Register(message{}, recvMessage)
