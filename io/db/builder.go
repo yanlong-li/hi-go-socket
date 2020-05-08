@@ -23,6 +23,8 @@ type builder struct {
 func (_builder builder) Find() *queryBuilder {
 	_XBuilder := new(queryBuilder)
 	_XBuilder.builder = _builder
+	// 增加默认排序 以主键顺序排序
+	_XBuilder.OrderBy(_XBuilder.builder.pk, SortAsc)
 	return _XBuilder
 }
 

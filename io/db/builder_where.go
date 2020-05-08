@@ -7,6 +7,15 @@ import (
 	"strings"
 )
 
+const (
+	WhereAnd        = "AND"
+	WhereOr         = "OR"
+	WhereIN         = "IN"
+	WhereNotIN      = "NOT IN"
+	WhereBetween    = "BETWEEN"
+	WhereNotBetween = "NOT BETWEEN"
+)
+
 // In
 func (_builder *builder) getWhere() string {
 	var where string
@@ -20,37 +29,37 @@ func (_builder *builder) getWhere() string {
 
 // In
 func (_builder *builder) whereIn(field string, list []interface{}) *builder {
-	_builder.andWhere("IN", field, list)
+	_builder.andWhere(WhereIN, field, list)
 	return _builder
 }
 
 // Not In
 func (_builder *builder) whereNotIn(field string, list []interface{}) *builder {
-	_builder.andWhere("NOT IN", field, list)
+	_builder.andWhere(WhereNotIN, field, list)
 	return _builder
 }
 
 // 区间
 func (_builder *builder) whereBetween(field string, value1, value2 interface{}) *builder {
-	_builder.andWhere(field, "BETWEEN ", value1, value2)
+	_builder.andWhere(field, WhereBetween, value1, value2)
 	return _builder
 }
 
 // 非区间
 func (_builder *builder) whereNotBetween(field string, value1, value2 interface{}) *builder {
-	_builder.andWhere(field, "NOT BETWEEN ", value1, value2)
+	_builder.andWhere(field, WhereNotBetween, value1, value2)
 	return _builder
 }
 
 // or
 func (_builder *builder) orWhere(args ...interface{}) *builder {
-	_builder.whereBuild("OR", args...)
+	_builder.whereBuild(WhereOr, args...)
 	return _builder
 }
 
 // and
 func (_builder *builder) andWhere(args ...interface{}) *builder {
-	_builder.whereBuild("AND", args...)
+	_builder.whereBuild(WhereAnd, args...)
 	return _builder
 }
 
@@ -143,7 +152,7 @@ func (_builder *builder) whereArgs1(value1 interface{}) string {
 func (_builder *builder) whereArgs2(field string, values interface{}) string {
 	_where := ""
 	if _value, ok := values.([]interface{}); ok {
-		_where = _builder.whereArgs3(field, "IN", _value)
+		_where = _builder.whereArgs3(field, WhereIN, _value)
 	} else {
 		_where = _builder.whereArgs3(field, "=", values)
 	}
@@ -161,8 +170,10 @@ func (_builder *builder) whereArgs4(field, symbol string, value1, value2 interfa
 }
 func getSymbolLink(symbol string) (link string) {
 	switch symbol {
-	case "BETWEEN":
-		link = " AND "
+	case WhereNotBetween:
+		link = " " + WhereAnd + " "
+	case WhereBetween:
+		link = " " + WhereAnd + " "
 	default:
 		link = ", "
 	}
@@ -192,7 +203,7 @@ func (_builder *builder) whereValue2Str(inter interface{}, _value2StrArgs ...val
 	value2StrArgs := value2StrArgs{Link: ",", Left: "(", Right: ")"}
 	// 只允许附带一个
 	if len(_value2StrArgs) > 1 {
-		panic("whereValue2Str _value2StrArgs max length 1")
+		logger.Trace("whereValue2Str _value2StrArgs max length 1", 0)
 	} else if len(_value2StrArgs) == 1 {
 		// 使用非默认值
 		__value2StrArgs := _value2StrArgs[0]
@@ -224,9 +235,9 @@ func (_builder *builder) whereValue2Str(inter interface{}, _value2StrArgs ...val
 	case map[interface{}]interface{}:
 		_tmp := ""
 		for _k, _v := range value {
-			_tmp += _builder.whereArgs2(_k.(string), _v) + " AND"
+			_tmp += _builder.whereArgs2(_k.(string), _v) + " " + WhereAnd
 		}
-		_tmp = _tmp[0 : len(_tmp)-4]
+		_tmp = _tmp[0 : len(_tmp)-len(" "+WhereAnd)]
 		_value = value2StrArgs.Left + _tmp + value2StrArgs.Right
 	default:
 		logger.Fatal("不支持的数据类型", 0, value)

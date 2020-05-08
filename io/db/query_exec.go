@@ -1,7 +1,7 @@
 package db
 
 import (
-	"fmt"
+	"github.com/yanlong-li/HelloWorld-GO/io/logger"
 	"log"
 	"reflect"
 )
@@ -10,7 +10,7 @@ import (
 func (_queryBuilder *queryBuilder) One() error {
 	// 准备查询字段
 	row := db.QueryRow(_queryBuilder.Sql(), _queryBuilder.builder.args...)
-	fmt.Println(_queryBuilder.Sql(), _queryBuilder.builder.args)
+	logger.Debug("执行SQL:"+_queryBuilder.Sql(), 0, _queryBuilder.builder.args)
 
 	refs := refs(_queryBuilder.builder.model)
 	err := row.Scan(refs...)

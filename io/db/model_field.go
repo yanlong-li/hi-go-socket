@@ -17,7 +17,10 @@ func (_builder *builder) scanFields() {
 }
 
 func (_builder *builder) getFields() string {
-	_builder.scanFields()
+	if len(_builder.fields) == 0 {
+		_builder.scanFields()
+	}
+
 	v7 := ""
 	for _, v := range _builder.fields {
 		v7 += "`" + snakeCase(v) + "`,"

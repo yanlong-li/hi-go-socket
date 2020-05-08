@@ -7,7 +7,7 @@ import (
 // 返回 SQL
 func (_queryBuilder *queryBuilder) Sql() string {
 
-	return fmt.Sprintf("SELECT %s FROM `%s` %s %s", _queryBuilder.builder.getFields(), _queryBuilder.builder.table, _queryBuilder.builder.getWhere(), _queryBuilder.limit)
+	return fmt.Sprintf("SELECT %s FROM `%s` %s %s %s", _queryBuilder.builder.getFields(), _queryBuilder.builder.table, _queryBuilder.builder.getWhere(), _queryBuilder.order, _queryBuilder.limit)
 }
 
 // 返回 SQL
