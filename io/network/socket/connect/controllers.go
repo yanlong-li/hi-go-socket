@@ -29,9 +29,8 @@ func (conn *SocketConnector) Connected() {
 	}()
 
 	for {
-		lenBuf := make([]byte, packet.BufLenLen)
 		// 读取包体长度
-		_, err := conn.Conn.Read(lenBuf)
+		lenBuf, err := conn.readLenBuf(packet.BufLenLen)
 		if err != nil {
 			logger.Debug("数据包长度读取失败", 0)
 			break
