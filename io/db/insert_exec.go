@@ -2,9 +2,9 @@ package db
 
 import "reflect"
 
-func (query *insertBuilder) Insert() error {
+func (_insertBuilder *insertBuilder) Insert() error {
 
-	result, err := db.Exec(query.Sql(), query.builder.args...)
+	result, err := db.Exec(_insertBuilder.Sql(), _insertBuilder.builder.args...)
 	if err != nil {
 		return err
 	}
@@ -13,7 +13,7 @@ func (query *insertBuilder) Insert() error {
 	if err != nil {
 		return err
 	}
-	p := reflect.ValueOf(query.builder.model).Elem()
+	p := reflect.ValueOf(_insertBuilder.builder.model).Elem()
 	f := p.Field(0)
 	f.SetUint(uint64(lastInsertID))
 	return nil

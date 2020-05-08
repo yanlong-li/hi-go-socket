@@ -8,10 +8,10 @@ import (
 )
 
 // In
-func (_b *builder) getWhere() string {
+func (_builder *builder) getWhere() string {
 	var where string
-	if len(_b.argsSql) > 0 {
-		where = "WHERE " + _b.argsSql
+	if len(_builder.argsSql) > 0 {
+		where = "WHERE " + _builder.argsSql
 	} else {
 		where = ""
 	}
@@ -19,71 +19,71 @@ func (_b *builder) getWhere() string {
 }
 
 // In
-func (_b *builder) whereIn(field string, list []interface{}) *builder {
-	_b.andWhere("IN", field, list)
-	return _b
+func (_builder *builder) whereIn(field string, list []interface{}) *builder {
+	_builder.andWhere("IN", field, list)
+	return _builder
 }
 
 // Not In
-func (_b *builder) whereNotIn(field string, list []interface{}) *builder {
-	_b.andWhere("NOT IN", field, list)
-	return _b
+func (_builder *builder) whereNotIn(field string, list []interface{}) *builder {
+	_builder.andWhere("NOT IN", field, list)
+	return _builder
 }
 
 // 区间
-func (_b *builder) whereBetween(field string, value1, value2 interface{}) *builder {
-	_b.andWhere(field, "BETWEEN ", value1, value2)
-	return _b
+func (_builder *builder) whereBetween(field string, value1, value2 interface{}) *builder {
+	_builder.andWhere(field, "BETWEEN ", value1, value2)
+	return _builder
 }
 
 // 非区间
-func (_b *builder) whereNotBetween(field string, value1, value2 interface{}) *builder {
-	_b.andWhere(field, "NOT BETWEEN ", value1, value2)
-	return _b
+func (_builder *builder) whereNotBetween(field string, value1, value2 interface{}) *builder {
+	_builder.andWhere(field, "NOT BETWEEN ", value1, value2)
+	return _builder
 }
 
 // or
-func (_b *builder) orWhere(args ...interface{}) *builder {
-	_b.whereBuild("OR", args...)
-	return _b
+func (_builder *builder) orWhere(args ...interface{}) *builder {
+	_builder.whereBuild("OR", args...)
+	return _builder
 }
 
 // and
-func (_b *builder) andWhere(args ...interface{}) *builder {
-	_b.whereBuild("AND", args...)
-	return _b
+func (_builder *builder) andWhere(args ...interface{}) *builder {
+	_builder.whereBuild("AND", args...)
+	return _builder
 }
 
 // 默认 and
-func (_b *builder) where(args ...interface{}) *builder {
-	_b.andWhere(args...)
-	return _b
+func (_builder *builder) where(args ...interface{}) *builder {
+	_builder.andWhere(args...)
+	return _builder
 }
 
 // 构建 where 条件
-func (_b *builder) whereBuild(link string, args ...interface{}) {
+func (_builder *builder) whereBuild(link string, args ...interface{}) {
 
-	_where := _b.whereArgsAuto(args...)
+	_where := _builder.whereArgsAuto(args...)
 
-	if len(_b.argsSql) == 0 {
-		_b.argsSql = _where
+	if len(_builder.argsSql) == 0 {
+		_builder.argsSql = _where
 	} else {
-		_b.argsSql = "(" + _b.argsSql + ") " + link + " (" + _where + ")"
+		_builder.argsSql = "(" + _builder.argsSql + ") " + link + " (" + _where + ")"
 	}
 
 }
 
 // 自动多参数拆分构建
-func (_b *builder) whereArgsAuto(args ...interface{}) string {
+func (_builder *builder) whereArgsAuto(args ...interface{}) string {
 	var _where string
 	if len(args) == 1 {
-		_where = _b.whereArgs1(args[0])
+		_where = _builder.whereArgs1(args[0])
 	} else if len(args) == 2 {
-		_where = _b.whereArgs2(args[0].(string), args[1])
+		_where = _builder.whereArgs2(args[0].(string), args[1])
 	} else if len(args) == 3 {
-		_where = _b.whereArgs3(args[1].(string), args[0].(string), args[2])
+		_where = _builder.whereArgs3(args[1].(string), args[0].(string), args[2])
 	} else if len(args) == 4 {
-		_where = _b.whereArgs4(args[0].(string), args[1].(string), args[2], args[3])
+		_where = _builder.whereArgs4(args[0].(string), args[1].(string), args[2], args[3])
 	} else if len(args) > 4 {
 		log.Panic("最多可接受 4 个参数，参数太多了。。。")
 	}
@@ -91,7 +91,7 @@ func (_b *builder) whereArgsAuto(args ...interface{}) string {
 
 }
 
-func (_b *builder) whereArgs1(value1 interface{}) string {
+func (_builder *builder) whereArgs1(value1 interface{}) string {
 	_where := ""
 	if value, ok := value1.(string); ok {
 		_where = value
@@ -112,19 +112,19 @@ func (_b *builder) whereArgs1(value1 interface{}) string {
 				}
 			}
 			if !ob {
-				_where = _b.whereArgsAuto(value...)
+				_where = _builder.whereArgsAuto(value...)
 			} else {
 				__where := ""
 				for _, _v := range value[1:] {
 
 					if __v, ok := _v.([]interface{}); ok {
 						if len(__v) <= 2 {
-							__where += op + " (" + _b.whereArgsAuto(__v...) + ") "
+							__where += op + " (" + _builder.whereArgsAuto(__v...) + ") "
 						} else {
-							__where += op + " (" + _b.whereArgs1(__v) + ") "
+							__where += op + " (" + _builder.whereArgs1(__v) + ") "
 						}
 					} else {
-						__where += op + " " + _b.whereValue2Str(__v) + " "
+						__where += op + " " + _builder.whereValue2Str(__v) + " "
 					}
 				}
 				_where = __where[len(op):]
@@ -132,30 +132,32 @@ func (_b *builder) whereArgs1(value1 interface{}) string {
 		}
 
 	} else if __v, ok := value1.(map[interface{}]interface{}); ok {
-		_where = _b.whereValue2Str(__v)
+		_where = _builder.whereValue2Str(__v)
+	} else {
+		logger.Fatal("不支持的数据类型", 0, value1)
 	}
 	return _where
 }
 
 // 针对字段 普通类型+map+切片
-func (_b *builder) whereArgs2(field string, values interface{}) string {
+func (_builder *builder) whereArgs2(field string, values interface{}) string {
 	_where := ""
 	if _value, ok := values.([]interface{}); ok {
-		_where = _b.whereArgs3(field, "IN", _value)
+		_where = _builder.whereArgs3(field, "IN", _value)
 	} else {
-		_where = _b.whereArgs3(field, "=", values)
+		_where = _builder.whereArgs3(field, "=", values)
 	}
 	return _where
 }
 
 // 针对字段
-func (_b *builder) whereArgs3(field, symbol string, values interface{}) string {
-	return fmt.Sprintf("`%s` %s %s", field, symbol, _b.whereValue2Str(values))
+func (_builder *builder) whereArgs3(field, symbol string, values interface{}) string {
+	return fmt.Sprintf("`%s` %s %s", field, symbol, _builder.whereValue2Str(values))
 }
 
 // 针对字段
-func (_b *builder) whereArgs4(field, symbol string, value1, value2 interface{}) string {
-	return fmt.Sprintf("`%s` %s %s%s%s", field, symbol, _b.whereValue2Str(value1), getSymbolLink(symbol), _b.whereValue2Str(value2))
+func (_builder *builder) whereArgs4(field, symbol string, value1, value2 interface{}) string {
+	return fmt.Sprintf("`%s` %s %s%s%s", field, symbol, _builder.whereValue2Str(value1), getSymbolLink(symbol), _builder.whereValue2Str(value2))
 }
 func getSymbolLink(symbol string) (link string) {
 	switch symbol {
@@ -183,7 +185,7 @@ type value2StrArgs struct {
 	Right string
 }
 
-func (_b *builder) whereValue2Str(inter interface{}, _value2StrArgs ...value2StrArgs) string {
+func (_builder *builder) whereValue2Str(inter interface{}, _value2StrArgs ...value2StrArgs) string {
 	var _value = "?"
 
 	// 附带参数
@@ -211,18 +213,18 @@ func (_b *builder) whereValue2Str(inter interface{}, _value2StrArgs ...value2Str
 
 	switch value := inter.(type) {
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, string:
-		_b.args = append(_b.args, value)
+		_builder.args = append(_builder.args, value)
 	case []interface{}:
 		_tmp := ""
 		for _, _v := range value {
-			_tmp += _b.whereValue2Str(_v, _value2StrArgs...) + value2StrArgs.Link
+			_tmp += _builder.whereValue2Str(_v, _value2StrArgs...) + value2StrArgs.Link
 		}
 		_tmp = _tmp[0 : len(_tmp)-1]
 		_value = value2StrArgs.Left + _tmp + value2StrArgs.Right
 	case map[interface{}]interface{}:
 		_tmp := ""
 		for _k, _v := range value {
-			_tmp += _b.whereArgs2(_k.(string), _v) + " AND"
+			_tmp += _builder.whereArgs2(_k.(string), _v) + " AND"
 		}
 		_tmp = _tmp[0 : len(_tmp)-4]
 		_value = value2StrArgs.Left + _tmp + value2StrArgs.Right
