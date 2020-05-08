@@ -5,27 +5,27 @@ import (
 )
 
 // 处理字段
-func (query *queryBuilder) scanFields() {
+func (_b *builder) scanFields() {
 
-	query.fields = []string{}
+	_b.fields = []string{}
 
-	t1 := reflect.TypeOf(query.model).Elem()
+	t1 := reflect.TypeOf(_b.model).Elem()
 	for i := 0; i < t1.NumField(); i++ {
-		query.fields = append(query.fields, snakeCase(t1.Field(i).Name))
+		_b.fields = append(_b.fields, snakeCase(t1.Field(i).Name))
 	}
 
 }
 
-func (query *queryBuilder) getFields() string {
-	query.scanFields()
+func (_b *builder) getFields() string {
+	_b.scanFields()
 	v7 := ""
-	for _, v := range query.fields {
+	for _, v := range _b.fields {
 		v7 += "`" + snakeCase(v) + "`,"
 	}
 	return v7[0 : len(v7)-1]
 }
 
-func (query *queryBuilder) getNotListFields(args ...string) string {
+func (_b *builder) getNotListFields(args ...string) string {
 
 	ig := make(map[string]int)
 
@@ -33,9 +33,9 @@ func (query *queryBuilder) getNotListFields(args ...string) string {
 		ig[v] = k
 	}
 
-	query.scanFields()
+	_b.scanFields()
 	v7 := ""
-	for _, v := range query.fields {
+	for _, v := range _b.fields {
 		if _, ok := ig[v]; ok {
 			continue
 		}

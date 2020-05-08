@@ -1,14 +1,14 @@
 package db
 
-func (query *queryBuilder) Limit(offset uint64, args ...uint64) *queryBuilder {
+func (_query *queryBuilder) Limit(offset uint64, args ...uint64) *queryBuilder {
 
-	query.limit = "LIMIT ?"
-	query.args = append(query.args, offset)
+	_query.limit = "LIMIT ?"
+	_query.builder.args = append(_query.builder.args, offset)
 	if len(args) >= 1 {
-		query.limit += ",?"
-		query.args = append(query.args, args[0])
+		_query.limit += ",?"
+		_query.builder.args = append(_query.builder.args, args[0])
 	}
-	query.limit += " "
-	return query
+	_query.limit += " "
+	return _query
 
 }

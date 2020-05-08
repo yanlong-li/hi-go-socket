@@ -7,9 +7,9 @@ import (
 )
 
 // 处理表名
-func (query *queryBuilder) tableNames() {
-	query.table = reflect.TypeOf(query.model).Elem().Name()
-	query.table = pluralizeTableName(query.table)
+func (_b *builder) tableNames() {
+	_b.table = reflect.TypeOf(_b.model).Elem().Name()
+	_b.table = pluralizeTableName(_b.table)
 }
 
 var tableNameRules = map[string]string{
