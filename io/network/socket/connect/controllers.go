@@ -39,7 +39,7 @@ func (conn *SocketConnector) Connected() {
 		// 容不下 OpCode 要你何用
 		if bufLen <= packet.OpCodeLen {
 			logger.Debug("数据长度标识不正确", 0)
-			return
+			break
 		}
 		buf, err := conn.readLenBuf(bufLen)
 		if err != nil {
