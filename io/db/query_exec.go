@@ -14,7 +14,7 @@ func (_queryBuilder *queryBuilder) One() OrmError {
 	refs := refs(_queryBuilder.builder.model)
 	err := row.Scan(refs...)
 	_queryBuilder.row(refs)
-	return OrmError{err: err}
+	return OrmError{Err: err}
 }
 
 // 处理单条记录

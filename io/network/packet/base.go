@@ -19,7 +19,7 @@ func Register(op uint32, packet interface{}, packets ...interface{}) {
 	for _, v := range packets {
 		op++
 		Packets[op] = v
-		RPackets[reflect.TypeOf(packet)] = op
+		RPackets[reflect.TypeOf(v)] = op
 	}
 }
 

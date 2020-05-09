@@ -37,7 +37,7 @@ func (conn *SocketConnector) Connected() {
 		}
 		bufLen := binary.LittleEndian.Uint16(lenBuf)
 		// 容不下 OpCode 要你何用
-		if bufLen <= packet.OpCodeLen {
+		if bufLen < packet.OpCodeLen {
 			logger.Debug("数据长度标识不正确", 0)
 			break
 		}
