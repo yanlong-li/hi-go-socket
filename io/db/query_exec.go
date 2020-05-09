@@ -39,14 +39,15 @@ func (_queryBuilder *queryBuilder) Exists() bool {
 // 批量查询
 func (_queryBuilder *queryBuilder) All() []interface{} {
 	rows, err := db.Query(_queryBuilder.Sql(), _queryBuilder.builder.args...)
+	logger.Debug("执行SQL:"+_queryBuilder.Sql(), 0, _queryBuilder.builder.args)
 	if err != nil {
-		logger.Fatal("database Find ALL error", 0, err)
+		logger.Fatal("database Find ALL error", 0, err.Error())
 	}
 	refs := refs(_queryBuilder.builder.model)
 	for rows.Next() {
 		err = rows.Scan(refs...)
 		if err != nil {
-			logger.Fatal("database Scan ALL error", 0, err)
+			logger.Fatal("database Scan ALL error", 0, err.Error())
 		}
 		_queryBuilder.rows(refs)
 	}
