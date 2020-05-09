@@ -2,12 +2,11 @@ package db
 
 import (
 	"github.com/yanlong-li/HelloWorld-GO/io/logger"
-	"log"
 	"reflect"
 )
 
 // 查询单条
-func (_queryBuilder *queryBuilder) One() error {
+func (_queryBuilder *queryBuilder) One() OrmError {
 	// 准备查询字段
 	row := db.QueryRow(_queryBuilder.Sql(), _queryBuilder.builder.args...)
 	logger.Debug("执行SQL:"+_queryBuilder.Sql(), 0, _queryBuilder.builder.args)
@@ -15,7 +14,7 @@ func (_queryBuilder *queryBuilder) One() error {
 	refs := refs(_queryBuilder.builder.model)
 	err := row.Scan(refs...)
 	_queryBuilder.row(refs)
-	return err
+	return OrmError{err: err}
 }
 
 // 处理单条记录
@@ -31,7 +30,7 @@ func (_queryBuilder *queryBuilder) row(refs []interface{}) {
 
 // 查询单条
 func (_queryBuilder *queryBuilder) Exists() bool {
-	if _queryBuilder.One() != nil {
+	if _queryBuilder.One().Empty() {
 		return false
 	}
 	return true
@@ -41,11 +40,14 @@ func (_queryBuilder *queryBuilder) Exists() bool {
 func (_queryBuilder *queryBuilder) All() []interface{} {
 	rows, err := db.Query(_queryBuilder.Sql(), _queryBuilder.builder.args...)
 	if err != nil {
-		log.Panic(err)
+		logger.Fatal("database Find ALL error", 0, err)
 	}
 	refs := refs(_queryBuilder.builder.model)
 	for rows.Next() {
-		_ = rows.Scan(refs...)
+		err = rows.Scan(refs...)
+		if err != nil {
+			logger.Fatal("database Scan ALL error", 0, err)
+		}
 		_queryBuilder.rows(refs)
 	}
 
