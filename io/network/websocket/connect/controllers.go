@@ -9,7 +9,6 @@ import (
 	"github.com/yanlong-li/HelloWorld-GO/io/network/route"
 	baseStream "github.com/yanlong-li/HelloWorld-GO/io/network/stream"
 	"github.com/yanlong-li/HelloWorld-GO/io/network/websocket/stream"
-	"log"
 	"reflect"
 )
 
@@ -33,11 +32,11 @@ func (conn *WebSocketConnector) Connected() {
 		_, buf, err := conn.Conn.ReadMessage()
 
 		if err != nil {
-			log.Println("read:", err)
+			logger.Debug("read:"+string(buf), 0, err)
 			// 停止继续循环
 			break
 		}
-		log.Printf("recv: %s", buf)
+		logger.Debug("recv: "+string(buf), 0)
 		conn.HandleData(buf)
 	}
 }
@@ -124,7 +123,7 @@ func (conn *WebSocketConnector) RecvAction(bs baseStream.Interface) bool {
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(bs))
-		in = append(in, reflect.ValueOf(*conn))
+		in = append(in, reflect.ValueOf(conn))
 		result := reflect.ValueOf(f).Call(in)
 		if len(result) >= 1 {
 			return result[0].Bool()
