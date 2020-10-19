@@ -2,7 +2,7 @@ package websocket
 
 import (
 	"flag"
-	"github.com/gorilla/websocket"
+	gorillaWebsocket "github.com/gorilla/websocket"
 	"github.com/yanlong-li/hi-go-logger"
 	baseConnect "github.com/yanlong-li/hi-go-socket/connect"
 	"github.com/yanlong-li/hi-go-socket/websocket/connect"
@@ -12,7 +12,7 @@ import (
 )
 
 var server *http.Server
-var upGrader = websocket.Upgrader{
+var upGrader = gorillaWebsocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},

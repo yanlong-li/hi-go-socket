@@ -1,8 +1,8 @@
-# Hi Socket GO (hi-go-socket)
+# Hi Go Socket (hi-go-socket)
 
 > 一个用 Go 语言开发的，基于兴趣爱好的 Socket 通讯服务框架。
 
-> 2020年10月19日 已由 HelloWorldGo 更名为 HiSocketGo
+> 2020年10月19日 已由 HelloWorldGo 更名为 HiGoSocket
 
 ## 写在前面
 
@@ -18,15 +18,15 @@
 
 ### 基础通讯架构
 
-    https://github.com/Yanlong-LI/hi-socket-go
+    https://github.com/Yanlong-LI/hi-go-socket
 
 #### 客户端实现案例：
 
-    https://github.com/Yanlong-LI/HelloWorldClient
+    https://github.com/Yanlong-LI/hi-go-client
 
 #### 服务端实现案例：
 
-    https://github.com/Yanlong-LI/HelloWorldServer
+    https://github.com/Yanlong-LI/hi-go-server
 
 ## 开源
 

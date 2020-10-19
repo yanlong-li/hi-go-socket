@@ -271,8 +271,8 @@ func main() {
 
 #### 客户端实现：
 
-    https://github.com/Yanlong-LI/HelloWorldClient
+    https://github.com/Yanlong-LI/hi-go-client
 
 #### 服务端实现：
 
-    https://github.com/Yanlong-LI/HelloWorldServer
+    https://github.com/Yanlong-LI/hi-go-server
