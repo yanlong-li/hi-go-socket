@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/route"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/socket"
+	"github.com/yanlong-li/hi-go-socket/connect"
+	"github.com/yanlong-li/hi-go-socket/packet"
+	"github.com/yanlong-li/hi-go-socket/route"
+	"github.com/yanlong-li/hi-go-socket/socket"
 )
 
 // 定义数据包模型结构体，暂时不支持map类型

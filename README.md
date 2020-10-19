@@ -1,6 +1,8 @@
-# HelloWorld
+# Hi Socket GO (hi-go-socket)
 
->一个用Go语言开发的，基于兴趣爱好的IM通讯服务框架。
+> 一个用 Go 语言开发的，基于兴趣爱好的 Socket 通讯服务框架。
+
+> 2020年10月19日 已由 HelloWorldGo 更名为 HiSocketGo
 
 ## 写在前面
 
@@ -11,19 +13,25 @@
 如果你有好的意见或建议请通过 `issues` 提出，如果你想加入这个项目可以直接 `Fork` 并将改动 `new pull request`
 
 ### 入门教程
-   [基础教程](./doc/README.md)
-   
-### 基础通讯架构
-    https://github.com/Yanlong-LI/HelloWorld-GO
 
-#### 客户端实现：
+[基础教程](./doc/README.md)
+
+### 基础通讯架构
+
+    https://github.com/Yanlong-LI/hi-socket-go
+
+#### 客户端实现案例：
+
     https://github.com/Yanlong-LI/HelloWorldClient
 
-#### 服务端实现：
+#### 服务端实现案例：
+
     https://github.com/Yanlong-LI/HelloWorldServer
-    
+
 ## 开源
+
 ### Idea 开源使用授权许可
-本项目已获得 [Jetbrains](https://www.jetbrains.com/?from=HelloWorld-GO) 提供免费开源许可证，感谢。
+
+本项目已获得 [Jetbrains](https://www.jetbrains.com/?from=hi-go-socket) 提供免费开源许可证，感谢。
 
 ![img](doc/jetbrains.svg)

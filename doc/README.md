@@ -1,15 +1,14 @@
 # 使用教程
->包含客户端和服务端的使用教程
 
-
+> 包含客户端和服务端的使用教程
 
 ## 服务端
+
 [demo](./demo/server/server.go)
 
 ### 数据包
-首先定义数据包，数据包是用来和客户端通信的数据模型
-采用go语言中的结构体作为一个数据包,
-支持类型有 bool、int/uint8~64、Float32/64、string、slice、struct(嵌套)
+
+首先定义数据包，数据包是用来和客户端通信的数据模型 采用go语言中的结构体作为一个数据包, 支持类型有 bool、int/uint8~64、Float32/64、string、slice、struct(嵌套)
 
 暂不支持map类型，后续会支持
 
@@ -22,24 +21,21 @@ type demo struct {
 	Id   uint32
 	Name string
 }
- 
+
 ```
 
 ### 注册数据包
 
-数据包模型定义后需要注册，才能被正常使用
-数据包注册需要两个参数，1 操作码，2 数据包
+数据包模型定义后需要注册，才能被正常使用 数据包注册需要两个参数，1 操作码，2 数据包
 
-操作码：uint32 唯一，用于识别数据包，0-5999 系统保留，需要从 6000 开始自定义
-数据包：上一步中定义的数据包，需要实例化后的空对象 `demo{}`
+操作码：uint32 唯一，用于识别数据包，0-5999 系统保留，需要从 6000 开始自定义 数据包：上一步中定义的数据包，需要实例化后的空对象 `demo{}`
 
 * 请注意操作码唯一性，否则后定义将覆盖前定义
-
 
 ```go
 package main
 
-import "github.com/yanlong-li/HelloWorld-GO/io/network/packet"
+import "github.com/yanlong-li/hi-go-socket/packet"
 
 type demo struct {
 	Id   uint32
@@ -53,18 +49,19 @@ func init() {
 ```
 
 ### 路由、动作
+
 又称动作 action ：收到数据包后执行的动作,接收两个参数
 
 第一个是要接收的包类型，如：demo 结构体,
 
-第二个是固定的 [connect.Connector](../io/network/connect/connector.go) 类型
+第二个是固定的 [connect.Connector](../connect/connector.go) 类型
 
 ```go
 package main
 
 import (
 	"fmt"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
+	"github.com/yanlong-li/hi-go-socket/connect"
 )
 
 type demo struct {
@@ -79,16 +76,16 @@ func recvDemo(d demo, c connect.Connector) {
 ```
 
 ### 注册路由
-和注册数据包的意思一致，要注册才能被调用
-支持匿名函数注册
+
+和注册数据包的意思一致，要注册才能被调用 支持匿名函数注册
 
 ```go
 package main
 
 import (
 	"fmt"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/route"
+	"github.com/yanlong-li/hi-go-socket/connect"
+	"github.com/yanlong-li/hi-go-socket/route"
 )
 
 type demo struct {
@@ -113,7 +110,8 @@ func main() {
 ```
 
 ### 运行服务
-上面准备好后即可开始监听服务，目前支持 [Socket](../io/network/socket/server.go) 和 [Websocket](../io/network/websocket/server.go)
+
+上面准备好后即可开始监听服务，目前支持 [Socket](../socket/server.go) 和 [Websocket](../websocket/server.go)
 
 可以二选一，也可以同时开启，需要传递一个字符串形式的监听地址和端口，监听所有地址可以使用`:3000`,省略地址
 
@@ -126,10 +124,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/route"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/socket"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/websocket"
+	"github.com/yanlong-li/hi-go-socket/connect"
+	"github.com/yanlong-li/hi-go-socket/route"
+	"github.com/yanlong-li/hi-go-socket/socket"
+	"github.com/yanlong-li/hi-go-socket/websocket"
 )
 
 type demo struct {
@@ -161,8 +159,8 @@ func main() {
 ```
 
 ### 系统保留操作码
-系统保留 0- 5999 操作码
-用于基础操作使用，虽然可能用不到几个，但是从6000开始 的 uint32 足够肆意挥霍了，如果不够用？这个系统架构支撑不了你的业务
+
+系统保留 0- 5999 操作码 用于基础操作使用，虽然可能用不到几个，但是从6000开始 的 uint32 足够肆意挥霍了，如果不够用？这个系统架构支撑不了你的业务
 
     0(connect.Connector) 客户端连接后调用,只有一个 connect.Connector 参数
     1(uint64)   连接 ID，后期会改成弱化版的一个接口
@@ -174,11 +172,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/connect"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/packet"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/route"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/socket"
-	"github.com/yanlong-li/HelloWorld-GO/io/network/stream"
+	"github.com/yanlong-li/hi-go-socket/connect"
+	"github.com/yanlong-li/hi-go-socket/packet"
+	"github.com/yanlong-li/hi-go-socket/route"
+	"github.com/yanlong-li/hi-go-socket/socket"
+	"github.com/yanlong-li/hi-go-socket/stream"
 )
 
 type c struct {
@@ -246,23 +244,24 @@ func main() {
 
 ```
 
-
 ## 客户端
+
 [demo](./demo/client/client.go)
 
 ### 运行服务
 
 ```go
 package main
-import "github.com/yanlong-li/HelloWorld-GO/io/network/socket"
 
-func main()  {
-    //todo 定义数据包 同服务端
-    //todo 注册数据包 同服务端
-    //todo 定义路由 同服务端
-    //todo 注册路由 同服务端
-    //todo 系统路由 同服务端
-    socket.Server("127.0.0.1:3000")
+import "github.com/yanlong-li/hi-go-socket/socket"
+
+func main() {
+	//todo 定义数据包 同服务端
+	//todo 注册数据包 同服务端
+	//todo 定义路由 同服务端
+	//todo 注册路由 同服务端
+	//todo 系统路由 同服务端
+	socket.Server("127.0.0.1:3000")
 }
 ```
 
@@ -271,7 +270,9 @@ func main()  {
 更多请参考：
 
 #### 客户端实现：
+
     https://github.com/Yanlong-LI/HelloWorldClient
 
 #### 服务端实现：
+
     https://github.com/Yanlong-LI/HelloWorldServer
