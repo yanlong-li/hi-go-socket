@@ -1,6 +1,6 @@
 module github.com/yanlong-li/hi-go-socket
 
-go 1.14
+go 1.15
 
 require (
 	github.com/gorilla/websocket v1.4.3-0.20200912193213-c3dd95aea977

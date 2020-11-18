@@ -1,5 +1,15 @@
 package connect
 
+const (
+	TcpSocketServer = iota
+	TcpSocketClient
+	UdpSocketServer
+	UdpSocketClient
+	WebSocketServer
+	WebSocketClient
+	WEBRTC
+)
+
 // 连接器基础数据
 type BaseConnector struct {
 	ID   uint64

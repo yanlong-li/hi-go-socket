@@ -17,3 +17,7 @@ func Del(ID uint64) {
 	delete(connectList, ID)
 	go AddIdleSequenceId(ID)
 }
+
+func Count() uint64 {
+	return uint64(len(connectList))
+}
