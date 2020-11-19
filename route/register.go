@@ -5,19 +5,25 @@ import (
 	"reflect"
 )
 
-var routes = make(map[interface{}]interface{})
+var routes = make(map[uint8]map[interface{}]interface{})
 
-func Register(packet, fun interface{}) {
-	routes[reflect.TypeOf(packet)] = fun
+func Register(group uint8, packet, fun interface{}) {
+
+	groupRoutes := routes[group]
+	if groupRoutes == nil {
+		groupRoutes = make(map[interface{}]interface{})
+	}
+	groupRoutes[reflect.TypeOf(packet)] = fun
+	routes[group] = groupRoutes
 }
 
-func Handle(op uint32) interface{} {
+func Handle(group uint8, op uint32) interface{} {
 
-	p := packet.Packet(op)
+	p := packet.Packet(group, op)
 
 	if p != nil {
 
-		if v, ok := routes[reflect.TypeOf(p)]; ok {
+		if v, ok := routes[group][reflect.TypeOf(p)]; ok {
 			return v
 		}
 	}

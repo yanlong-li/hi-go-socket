@@ -9,7 +9,7 @@ import (
 
 //连接服务
 // 需要参数 监听地址:监听端口
-func Client(address string) {
+func Client(group uint8, address string) {
 	conn, err := net.Dial(Tcp, address)
 	if err != nil {
 		logger.Warning("连接服务器失败", 0, err)
@@ -21,8 +21,9 @@ func Client(address string) {
 	connector := connect.SocketConnector{
 		Conn: conn,
 		BaseConnector: baseConnect.BaseConnector{
-			ID:   baseConnect.GetAutoSequenceID(),
-			Type: baseConnect.TcpSocketClient,
+			ID:    baseConnect.GetAutoSequenceID(),
+			Type:  baseConnect.TcpSocketClient,
+			Group: group,
 		},
 	}
 	connector.Connected()

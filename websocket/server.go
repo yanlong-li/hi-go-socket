@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"flag"
 	gorillaWebsocket "github.com/gorilla/websocket"
 	"github.com/yanlong-li/hi-go-logger"
 	baseConnect "github.com/yanlong-li/hi-go-socket/connect"
@@ -19,16 +18,11 @@ var upGrader = gorillaWebsocket.Upgrader{
 	EnableCompression: true,
 }
 
-func Server(address string) {
-
-	var addr = flag.String("addr", address, "http service address")
-
-	flag.Parse()
-	log.SetFlags(0)
+func Server(address string, group uint8) {
 	logger.Debug("WS服务开启成功", 0, address)
 	mux := http.NewServeMux()
 	server = &http.Server{
-		Addr:         *addr,
+		Addr:         address,
 		WriteTimeout: time.Second * 4,
 		Handler:      mux,
 	}
@@ -47,8 +41,9 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	connector := &connect.WebSocketConnector{
 		Conn: conn,
 		BaseConnector: baseConnect.BaseConnector{
-			ID:   baseConnect.GetAutoSequenceID(),
-			Type: baseConnect.WebSocketServer,
+			ID:    baseConnect.GetAutoSequenceID(),
+			Type:  baseConnect.WebSocketServer,
+			Group: 1,
 		},
 	}
 

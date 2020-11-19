@@ -18,7 +18,7 @@ const (
 // 基础数据定义
 const (
 	// 标识码占位长度 4 字节 uint32
-	OpCodeLen = 4
+	OpCodeLen uint8 = 4
 	// 数据包长度标识符占位 2 字节 uint16
-	BufLenLen = 2
+	BufLenLen uint8 = 2
 )

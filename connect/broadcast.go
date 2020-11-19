@@ -17,6 +17,11 @@ func Broadcast(model BroadcastModel) {
 		if model.Self == false && id == model.Conn.GetId() {
 			continue
 		}
+		// 非同组，不可广播
+		if model.Conn.GetGroup() != v.GetGroup() {
+			continue
+		}
+
 		go broadcastSend(v, model)
 	}
 }

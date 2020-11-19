@@ -30,14 +30,14 @@ func (conn *SocketConnector) Connected() {
 
 	for {
 		// 读取包体长度
-		lenBuf, err := conn.readLenBuf(packet.BufLenLen)
+		lenBuf, err := conn.readLenBuf(uint16(packet.BufLenLen))
 		if err != nil {
 			logger.Debug("数据包长度读取失败", 0)
 			break
 		}
 		bufLen := binary.LittleEndian.Uint16(lenBuf)
 		// 容不下 OpCode 要你何用
-		if bufLen < packet.OpCodeLen {
+		if bufLen < uint16(packet.OpCodeLen) {
 			logger.Debug("数据长度标识不正确", 0)
 			break
 		}
@@ -85,7 +85,7 @@ func (conn *SocketConnector) HandleData(data []byte) {
 	// 每次动作不一致都注册一个单独的动作来处理
 	ps := stream.SocketPacketStream{}
 	ps.SetLen(uint16(len(data)))
-	if ps.GetLen() < packet.OpCodeLen {
+	if ps.GetLen() < uint16(packet.OpCodeLen) {
 		logger.Debug("数据长度标识不正确", 0)
 		return
 	}
@@ -101,7 +101,7 @@ func (conn *SocketConnector) HandleData(data []byte) {
 		return
 	}
 
-	f := route.Handle(ps.OpCode)
+	f := route.Handle(conn.GetGroup(), ps.OpCode)
 	if f != nil {
 		in := ps.Unmarshal(f)
 		in = append(in, reflect.ValueOf(conn))
@@ -115,7 +115,7 @@ func (conn *SocketConnector) HandleData(data []byte) {
 func (conn *SocketConnector) ConnectedAction() {
 	go connect.Add(conn)
 
-	f := route.Handle(packet.Connection)
+	f := route.Handle(conn.GetGroup(), packet.Connection)
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(conn))
@@ -128,7 +128,7 @@ func (conn *SocketConnector) ConnectedAction() {
 // 准备断开连接
 func (conn *SocketConnector) DisconnectAction() {
 
-	f := route.Handle(packet.Disconnection)
+	f := route.Handle(conn.GetGroup(), packet.Disconnection)
 	if f != nil {
 		//构造一个存放函数实参 Value 值的数纽
 		var in []reflect.Value
@@ -140,12 +140,12 @@ func (conn *SocketConnector) DisconnectAction() {
 
 	_ = conn.Conn.Close()
 
-	go connect.Del(conn.ID)
+	go connect.Del(conn.GetId())
 }
 
 // 收到数据包时
 func (conn *SocketConnector) RecvAction(bs baseStream.Interface) bool {
-	f := route.Handle(packet.BeforeRecv)
+	f := route.Handle(conn.GetGroup(), packet.BeforeRecv)
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(bs))
@@ -164,12 +164,12 @@ func (conn *SocketConnector) RecvAction(bs baseStream.Interface) bool {
 func (conn *SocketConnector) Send(model interface{}) error {
 
 	ps := &stream.SocketPacketStream{}
-	ps.Marshal(model)
+	ps.Marshal(conn.GetGroup(), model)
 	// 封包
 	data := ps.ToData()
 
 	// 发送之前进行数据处理：加密、压缩
-	f := route.Handle(packet.BeforeSending)
+	f := route.Handle(conn.GetGroup(), packet.BeforeSending)
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(ps))

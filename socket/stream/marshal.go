@@ -7,10 +7,10 @@ import (
 )
 
 //将包结构体反射写入字节流中
-func (ps *SocketPacketStream) Marshal(PacketModel interface{}) {
+func (ps *SocketPacketStream) Marshal(group uint8, PacketModel interface{}) {
 	ps.SetData([]byte{})
 
-	ps.SetOpCode(packet.OpCode(PacketModel))
+	ps.SetOpCode(packet.OpCode(group, PacketModel))
 
 	elem := reflect.ValueOf(PacketModel)
 	for k := 0; k < elem.NumField(); k++ {

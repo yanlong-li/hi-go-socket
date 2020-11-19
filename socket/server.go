@@ -10,7 +10,7 @@ import (
 
 //开始服务
 // 需要参数 监听地址:监听端口
-func Server(address string) {
+func Server(group uint8, address string) {
 
 	service, err := net.Listen(Tcp, address)
 	if err != nil {
@@ -19,8 +19,15 @@ func Server(address string) {
 	logger.Debug("SOCKET服务开启成功", 0, address)
 	defer CloseService(service)
 
+	handleServer(service, group)
+}
+
+func CloseService(service net.Listener) {
+	_ = service.Close()
+}
+
+func handleServer(service net.Listener, group uint8) {
 	for {
-		//time.Sleep(time.Second * 10)
 		if conn, err := service.Accept(); err != nil {
 			log.Println("accept error:", err)
 			break
@@ -29,17 +36,13 @@ func Server(address string) {
 			socketConnect := &connect.SocketConnector{
 				Conn: conn,
 				BaseConnector: baseConnect.BaseConnector{
-					ID:   baseConnect.GetAutoSequenceID(),
-					Type: baseConnect.TcpSocketServer,
+					ID:    baseConnect.GetAutoSequenceID(),
+					Type:  baseConnect.TcpSocketServer,
+					Group: group,
 				},
 			}
 			go socketConnect.Connected()
 		}
 
 	}
-
-}
-
-func CloseService(service net.Listener) {
-	_ = service.Close()
 }

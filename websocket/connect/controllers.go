@@ -49,7 +49,7 @@ func (conn *WebSocketConnector) Disconnect() {
 // 处理数据包
 func (conn *WebSocketConnector) HandleData(buf []byte) {
 	// uint16 = 4 uint32 = 8 uint64 = 16
-	var OpCodeType uint8 = packet.OpCodeLen * 2
+	var OpCodeType = packet.OpCodeLen * 2
 	//监听动作
 	if len(buf) >= int(OpCodeType) {
 		OpCode, err := hex.DecodeString(string(buf[0:OpCodeType]))
@@ -70,7 +70,7 @@ func (conn *WebSocketConnector) HandleData(buf []byte) {
 				return
 			}
 
-			f := route.Handle(websocketPacketStream.OpCode)
+			f := route.Handle(conn.GetGroup(), websocketPacketStream.OpCode)
 			if f != nil {
 				in := websocketPacketStream.Unmarshal(f)
 				in = append(in, reflect.ValueOf(conn))
@@ -88,7 +88,7 @@ func (conn *WebSocketConnector) HandleData(buf []byte) {
 func (conn *WebSocketConnector) ConnectedAction() {
 	go connect.Add(conn)
 
-	f := route.Handle(packet.Connection)
+	f := route.Handle(conn.GetGroup(), packet.Connection)
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(conn))
@@ -101,7 +101,7 @@ func (conn *WebSocketConnector) ConnectedAction() {
 // 准备断开连接
 func (conn *WebSocketConnector) DisconnectAction() {
 
-	f := route.Handle(packet.Disconnection)
+	f := route.Handle(conn.GetGroup(), packet.Disconnection)
 	if f != nil {
 		//构造一个存放函数实参 Value 值的数纽
 		var in []reflect.Value
@@ -113,13 +113,13 @@ func (conn *WebSocketConnector) DisconnectAction() {
 
 	_ = conn.Conn.Close()
 
-	go connect.Del(conn.ID)
+	go connect.Del(conn.GetId())
 
 }
 
 // 收到数据包时
 func (conn *WebSocketConnector) RecvAction(bs baseStream.Interface) bool {
-	f := route.Handle(packet.BeforeRecv)
+	f := route.Handle(conn.GetGroup(), packet.BeforeRecv)
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(bs))
@@ -137,11 +137,11 @@ func (conn *WebSocketConnector) RecvAction(bs baseStream.Interface) bool {
 // 发送数据包
 func (conn *WebSocketConnector) Send(PacketModel interface{}) error {
 	ps := stream.WebSocketPacketStream{}
-	ps.Marshal(PacketModel)
+	ps.Marshal(conn.GetGroup(), PacketModel)
 	data := ps.ToData()
 
 	// 发送之前进行数据处理：加密、压缩
-	f := route.Handle(packet.BeforeSending)
+	f := route.Handle(conn.GetGroup(), packet.BeforeSending)
 	if f != nil {
 		var in []reflect.Value
 		in = append(in, reflect.ValueOf(ps))
