@@ -12,11 +12,11 @@ import (
 func Client(group uint8, address string) {
 	conn, err := net.Dial(Tcp, address)
 	if err != nil {
-		logger.Warning("连接服务器失败", 0, err)
+		logger.Warning("Failed to connect to the server", 0, err)
 		return
 	}
 	defer CloseClient(conn)
-	logger.Debug("已连接到服务器", 0)
+	logger.Debug("Connected to server", 0)
 	// 写入本地连接列表
 	connector := connect.SocketConnector{
 		Conn: conn,

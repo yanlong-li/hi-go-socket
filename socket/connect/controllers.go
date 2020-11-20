@@ -22,7 +22,7 @@ func (conn *SocketConnector) Connected() {
 
 	defer func() { // 必须要先声明defer，否则不能捕获到panic异常
 		if err := recover(); err != nil {
-			logger.Debug("一个连接发生异常", 0, err) // 这里的err其实就是panic传入的内容
+			logger.Debug("An exception occurred in a connection", 0, err) // 这里的err其实就是panic传入的内容
 		}
 		conn.Disconnect()
 
@@ -32,18 +32,18 @@ func (conn *SocketConnector) Connected() {
 		// 读取包体长度
 		lenBuf, err := conn.readLenBuf(uint16(packet.BufLenLen))
 		if err != nil {
-			logger.Debug("数据包长度读取失败", 0)
+			logger.Debug("Packet length read failed", 0)
 			break
 		}
 		bufLen := binary.LittleEndian.Uint16(lenBuf)
 		// 容不下 OpCode 要你何用
 		if bufLen < uint16(packet.OpCodeLen) {
-			logger.Debug("数据长度标识不正确", 0)
+			logger.Debug("Incorrect data length identification", 0)
 			break
 		}
 		buf, err := conn.readLenBuf(bufLen)
 		if err != nil {
-			logger.Debug("数据包体读取失败", 0)
+			logger.Debug("Packet body read failure", 0)
 			break
 		}
 		conn.HandleData(buf)
@@ -76,7 +76,7 @@ func (conn *SocketConnector) readLenBuf(bufLen uint16) ([]byte, error) {
 
 func (conn *SocketConnector) Disconnect() {
 	_ = conn.Conn.Close()
-	logger.Debug("断开连接", 0)
+	logger.Debug("Disconnect", 0)
 }
 
 // 处理单个数据包 包体不含长度标识
@@ -86,12 +86,12 @@ func (conn *SocketConnector) HandleData(data []byte) {
 	ps := stream.SocketPacketStream{}
 	ps.SetLen(uint16(len(data)))
 	if ps.GetLen() < uint16(packet.OpCodeLen) {
-		logger.Debug("数据长度标识不正确", 0)
+		logger.Debug("Incorrect data length identification", 0)
 		return
 	}
 	ps.SetOpCode(binary.LittleEndian.Uint32(data[:packet.OpCodeLen]))
 	if ps.OpCode < packet.ReservedCode {
-		logger.Debug("OP码范围不正确", 0)
+		logger.Debug("The range of op code is incorrect", 0)
 		return
 	}
 
@@ -107,7 +107,7 @@ func (conn *SocketConnector) HandleData(data []byte) {
 		in = append(in, reflect.ValueOf(conn))
 		go reflect.ValueOf(f).Call(in)
 	} else {
-		logger.Debug(fmt.Sprintf("未注册的包:%d", ps.OpCode), 0, ps.OpCode)
+		logger.Debug(fmt.Sprintf("Unregistered packages:%d", ps.OpCode), 0, ps.OpCode)
 	}
 }
 
@@ -121,7 +121,7 @@ func (conn *SocketConnector) ConnectedAction() {
 		in = append(in, reflect.ValueOf(conn))
 		reflect.ValueOf(f).Call(in)
 	} else {
-		logger.Debug("没有设置连接成功动作:", 1)
+		logger.Debug("Connection success action is not set:", 1)
 	}
 }
 
@@ -135,7 +135,7 @@ func (conn *SocketConnector) DisconnectAction() {
 		in = append(in, reflect.ValueOf(conn))
 		reflect.ValueOf(f).Call(in)
 	} else {
-		logger.Debug("没有设置断开连接动作:", 1)
+		logger.Debug("Disconnection action is not set:", 1)
 	}
 
 	_ = conn.Conn.Close()
@@ -183,7 +183,7 @@ func (conn *SocketConnector) Send(model interface{}) error {
 
 	_, err := conn.Conn.Write(data)
 	if err != nil {
-		logger.Debug("发送数据失败", 0)
+		logger.Debug("Sending data failed", 0)
 	}
 	return err
 }
