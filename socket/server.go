@@ -14,7 +14,7 @@ func Server(group uint8, address string) {
 
 	service, err := net.Listen(Tcp, address)
 	if err != nil {
-		logger.Fatal("SOCKET服务开启失败", 0, err)
+		logger.Fatal("SOCKET服务开启失败", 0, err.Error())
 	}
 	logger.Debug("SOCKET服务开启成功", 0, address)
 	defer CloseService(service)

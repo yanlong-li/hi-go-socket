@@ -13,9 +13,24 @@ func (ps *SocketPacketStream) Marshal(group uint8, PacketModel interface{}) {
 	ps.SetOpCode(packet.OpCode(group, PacketModel))
 
 	elem := reflect.ValueOf(PacketModel)
-	for k := 0; k < elem.NumField(); k++ {
-		field := elem.Field(k)
-		ps.MarshalConverter(field)
+
+	switch elem.Kind() {
+	case reflect.Map:
+		keys := elem.MapKeys()
+		ps.WriteInt64(int64(elem.Len()))
+		for _, k := range keys {
+			value := elem.MapIndex(k)
+			ps.MarshalConverter(k)
+			ps.MarshalConverter(value)
+		}
+	case reflect.Slice:
+		fallthrough
+	case reflect.Struct:
+		for k := 0; k < elem.NumField(); k++ {
+			field := elem.Field(k)
+			ps.MarshalConverter(field)
+		}
+		ps.SetLen(uint16(len(ps.GetData())))
 	}
 	ps.SetLen(uint16(len(ps.GetData())))
 }
@@ -57,6 +72,14 @@ func (ps *SocketPacketStream) MarshalConverter(field reflect.Value) {
 		for k := 0; k < field.NumField(); k++ {
 			field := field.Field(k)
 			ps.MarshalConverter(field)
+		}
+	case reflect.Map:
+		keys := field.MapKeys()
+		ps.WriteInt64(int64(field.Len()))
+		for _, k := range keys {
+			value := field.MapIndex(k)
+			ps.MarshalConverter(k)
+			ps.MarshalConverter(value)
 		}
 	default:
 		logger.Fatal("不支持写入的类型", 0, field.Kind())

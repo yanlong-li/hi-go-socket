@@ -16,14 +16,38 @@ func (ps *SocketPacketStream) Unmarshal(f interface{}) []reflect.Value {
 		params := t.In(i)
 		// 创建一个reflect.value类型的params需要的指针类型的数据
 		elem := reflect.New(params).Elem()
-		for k := 0; k < elem.NumField(); k++ {
-			field := elem.Field(k)
-			value := ps.UnmarshalConverter(field)
-			field.Set(value)
+		switch elem.Kind() {
+		case reflect.Map:
+			mapSize := ps.ReadInt64()
+			var i int64 = 0
+			keyType := elem.Type().Key()
+			valType := elem.Type().Elem()
+
+			e := reflect.MakeMap(elem.Type())
+
+			for i = 0; i < mapSize; i++ {
+
+				k := reflect.New(keyType).Elem()
+				ps.UnmarshalConverter(k)
+				v := reflect.New(valType).Elem()
+				ps.UnmarshalConverter(v)
+				e.SetMapIndex(k, v)
+			}
+			elem.Set(e)
+		case reflect.Slice:
+			fallthrough
+		case reflect.Struct:
+			for k := 0; k < elem.NumField(); k++ {
+				field := elem.Field(k)
+				value := ps.UnmarshalConverter(field)
+				field.Set(value)
+			}
 		}
 		in = append(in, elem)
 	}
+
 	return in
+
 }
 
 func (ps *SocketPacketStream) UnmarshalConverter(field reflect.Value) reflect.Value {
@@ -67,6 +91,20 @@ func (ps *SocketPacketStream) UnmarshalConverter(field reflect.Value) reflect.Va
 			field2 := field.Field(k)
 			ps.UnmarshalConverter(field2)
 		}
+	case reflect.Map:
+		mapSize := ps.ReadInt64()
+		var i int64 = 0
+		keyType := field.Type().Key()
+		valType := field.Type().Elem()
+		e := reflect.MakeMap(field.Type())
+		for i = 0; i < mapSize; i++ {
+			k := reflect.New(keyType).Elem()
+			ps.UnmarshalConverter(k)
+			v := reflect.New(valType).Elem()
+			ps.UnmarshalConverter(v)
+			e.SetMapIndex(k, v)
+		}
+		field.Set(e)
 	default:
 		logger.Fatal("未知类型", 0, field.Kind())
 	}

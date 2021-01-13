@@ -18,7 +18,7 @@ var upGrader = gorillaWebsocket.Upgrader{
 	EnableCompression: true,
 }
 
-func Server(address string, group uint8) {
+func Server(group uint8, address string) {
 	logger.Debug("WS服务开启成功", 0, address)
 	mux := http.NewServeMux()
 	server = &http.Server{
