@@ -18,15 +18,15 @@
 
 ### 基础通讯架构
 
-    https://github.com/Yanlong-LI/hi-go-socket
+    https://github.com/yanlong-li/hi-go-socket
 
 #### 客户端实现案例：
 
-    https://github.com/Yanlong-LI/hi-go-client
+    https://github.com/yanlong-li/hi-go-client
 
 #### 服务端实现案例：
 
-    https://github.com/Yanlong-LI/hi-go-server
+    https://github.com/yanlong-li/hi-go-server
 
 ## 开源
 
